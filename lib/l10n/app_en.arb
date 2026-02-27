@@ -1,0 +1,109 @@
+{
+  "@@locale": "en",
+
+  "appTitle": "SDU Match",
+
+  "profile": "Profile",
+  "swipe": "Explore",
+  "matches": "Matches",
+  "settings": "Settings",
+  "chat": "Chat",
+
+  "login": "Sign In",
+  "register": "Sign Up",
+  "email": "Email",
+  "password": "Password",
+  "loginWithGoogle": "Sign in with Google",
+  "or": "OR",
+  "noAccount": "Don't have an account?",
+  "hasAccount": "Already have an account?",
+  "invalidEmail": "Enter a valid SDU email",
+  "passwordTooShort": "Password must be at least 6 characters",
+
+  "onboardingTitle": "Create Your Profile",
+  "name": "Name",
+  "age": "Age",
+  "gender": "Gender",
+  "male": "Male",
+  "female": "Female",
+  "other": "Other",
+  "lookingFor": "Looking for",
+  "all": "All",
+  "faculty": "Faculty",
+  "yearOfStudy": "Year of Study",
+  "bio": "About Me",
+  "bioHint": "Tell about yourself...",
+  "interests": "Interests",
+  "saveProfile": "Save Profile",
+  "year": "year",
+
+  "editProfile": "Edit Profile",
+  "aboutMe": "About Me",
+  "myInterests": "My Interests",
+  "signOut": "Sign Out",
+  "deleteAccount": "Delete Account",
+  "deleteAccountConfirm": "Are you sure you want to delete your account? This action cannot be undone.",
+  "cancel": "Cancel",
+  "delete": "Delete",
+  "profileNotFound": "Profile not found",
+
+  "noMoreProfiles": "No more profiles",
+  "noMoreProfilesDesc": "Check back later for new people!",
+  "refresh": "Refresh",
+
+  "matchCongrats": "It's a Match! 🎉",
+  "matchDesc": "You and {name} liked each other",
+  "@matchDesc": {
+    "placeholders": {
+      "name": {"type": "String"}
+    }
+  },
+  "sendMessage": "Send Message",
+  "keepSwiping": "Keep Swiping",
+  "noMatches": "No matches yet",
+  "noMatchesDesc": "Keep swiping to find your match!",
+
+  "settingsLanguage": "Language",
+  "settingsTheme": "Theme",
+  "settingsNotifications": "Notifications",
+  "settingsAccount": "Account",
+  "settingsAbout": "About App",
+
+  "themeLight": "Light",
+  "themeDark": "Dark",
+  "themeSystem": "System",
+
+  "langRussian": "Russian",
+  "langKazakh": "Kazakh",
+  "langEnglish": "English",
+
+  "notifMatches": "Matches",
+  "notifMessages": "Messages",
+  "notifMatchesDesc": "Notify about new matches",
+  "notifMessagesDesc": "Notify about new messages",
+
+  "appVersion": "Version",
+  "privacyPolicy": "Privacy Policy",
+  "termsOfService": "Terms of Service",
+
+  "typeMessage": "Message...",
+  "send": "Send",
+  "noMessages": "No messages",
+  "startConversation": "Start a conversation!",
+  "chats": "Chats",
+  "newMatches": "New matches",
+  "messages": "Messages",
+  "noChatsYet": "No matches yet",
+  "noChatsYetDesc": "Keep swiping to meet people!",
+  "writeFirstMessage": "Write first! 💬",
+  "today": "Today",
+  "yesterday": "Yesterday",
+  "matchTitle": "It's a Match!",
+  "matchSubtitle": "You and {name} liked each other",
+  "writeMessage": "Send a message",
+  "continueLabel": "Continue",
+
+  "editingInDev": "Editing in development",
+  "settingsInDev": "Settings in development",
+  "course": "course"
+}

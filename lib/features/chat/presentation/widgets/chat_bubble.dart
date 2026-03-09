@@ -20,6 +20,37 @@ class ChatBubble extends StatelessWidget {
     final theme = Theme.of(context);
     final isDark = theme.brightness == Brightness.dark;
 
+    // System message: center alignment, neutral style
+    if (message.isSystem) {
+      return Padding(
+        padding: const EdgeInsets.symmetric(vertical: 12, horizontal: 12),
+        child: Center(
+          child: Container(
+            padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 8),
+            decoration: BoxDecoration(
+              color: isDark 
+                  ? Colors.grey.shade800 
+                  : Colors.grey.shade100,
+              borderRadius: BorderRadius.circular(16),
+            ),
+            child: Text(
+              message.text,
+              style: TextStyle(
+                color: isDark 
+                    ? Colors.grey.shade300 
+                    : Colors.grey.shade700,
+                fontSize: 13,
+                height: 1.3,
+                fontStyle: FontStyle.italic,
+              ),
+              textAlign: TextAlign.center,
+            ),
+          ),
+        ),
+      );
+    }
+
+    // Regular user message
     return Padding(
       padding: EdgeInsets.only(
         left: isMe ? 60 : 12,

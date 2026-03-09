@@ -53,7 +53,7 @@
 			<string>Editor</string>
 			<key>CFBundleURLSchemes</key>
 			<array>
-				<string>com.example.sdu_match</string>
+				<string>com.sdu.match</string>
 			</array>
 		</dict>
 	</array>

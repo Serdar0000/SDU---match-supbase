@@ -1,4 +1,4 @@
-﻿package com.example.sdu_match
+﻿package com.sdu.match
 
 import io.flutter.embedding.android.FlutterActivity
 

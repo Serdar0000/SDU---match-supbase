@@ -270,25 +270,48 @@ BEGIN
     'new_match',
     'Новый матч! 🎉',
     'У вас новый матч с ' || COALESCE(user1_profile.name, 'пользователем'),
-    jsonb_build_object('matchId', NEW.id, 'partnerId', NEW.user1_id)
-  );
-
-  -- Отправляем email если включены уведомления
-  IF user1_profile.email_notifications THEN
-    PERFORM send_email_notification(
-      user1_profile.email,
-      'Новый матч в SDU Match!',
-      'У вас новый матч с ' || COALESCE(user2_profile.name, 'пользователем') || '. Откройте приложение чтобы начать общение!'
+  -- Отправляем Push через Edge Function (Firebase)
+  PERFORM
+    net.http_post(
+      url := 'https://bomhoafsiolfhfxcdiwt.supabase.co/functions/v1/notify-fcm',
+      headers := jsonb_build_object(
+        'Content-Type', 'application/json',
+        'Authorization', 'Bearer ' || current_setting('app.settings.service_role_key')
+      ),
+      body := jsonb_build_object(
+        'user_id', NEW.user1_id,
+        'title', 'Новый матч! 🎉',
+        'body', 'У вас новый матч с ' || COALESCE(user2_profile.name, 'пользователем'),
+        'data', jsonb_build_object('matchId', NEW.id, 'type', 'new_match')
+      )
     );
-  END IF;
 
-  IF user2_profile.email_notifications THEN
-    PERFORM send_email_notification(
-      user2_profile.email,
-      'Новый матч в SDU Match!',
-      'У вас новый матч с ' || COALESCE(user1_profile.name, 'пользователем') || '. Откройте приложение чтобы начать общение!'
+  PERFORM
+    net.http_post(
+      url := 'https://bomhoafsiolfhfxcdiwt.supabase.co/functions/v1/notify-fcm',
+      headers := jsonb_build_object(
+        'Content-Type', 'application/json',
+        'Authorization', 'Bearer ' || current_setting('app.settings.service_role_key')
+      ),
+      body := jsonb_build_object(
+        'user_id', NEW.user2_id,
+        'title', 'Новый матч! 🎉',
+        'body', 'У вас новый матч с ' || COALESCE(user1_profile.name, 'пользователем'),
+        'data', jsonb_build_object('matchId', NEW.id, 'type', 'new_match')
+      )
     );
-  END IF;
+
+  -- Автоматическое приветствие (Привет! Хеллоу!)
+  -- Отправляем от имени user1 к user2
+  INSERT INTO messages (match_id, sender_id, text, created_at)
+  VALUES (NEW.id, NEW.user1_id, 'Привет! Хеллоу! 🎉', NOW() + interval '1 second');
+
+  -- Обновляем последнее сообщение в матче
+  UPDATE matches 
+  SET last_message = 'Привет! Хеллоу! 🎉',
+      last_message_time = NOW() + interval '1 second',
+      unread_count_user2 = 1
+  WHERE id = NEW.id;
 
   RETURN NEW;
 END;
@@ -332,17 +355,21 @@ BEGIN
     'new_message',
     COALESCE(sender_profile.name, 'Новое сообщение'),
     LEFT(NEW.text, 100),
-    jsonb_build_object('matchId', NEW.match_id, 'senderId', NEW.sender_id)
-  );
-
-  -- Отправляем email если включены уведомления
-  IF receiver_profile.email_notifications THEN
-    PERFORM send_email_notification(
-      receiver_profile.email,
-      'Новое сообщение от ' || COALESCE(sender_profile.name, 'пользователя'),
-      LEFT(NEW.text, 200)
+  -- Отправляем Push через Edge Function (Firebase)
+  PERFORM
+    net.http_post(
+      url := 'https://bomhoafsiolfhfxcdiwt.supabase.co/functions/v1/notify-fcm',
+      headers := jsonb_build_object(
+        'Content-Type', 'application/json',
+        'Authorization', 'Bearer ' || current_setting('app.settings.service_role_key')
+      ),
+      body := jsonb_build_object(
+        'user_id', receiver_id,
+        'title', COALESCE(sender_profile.name, 'Новое сообщение'),
+        'body', LEFT(NEW.text, 100),
+        'data', jsonb_build_object('matchId', NEW.match_id, 'senderId', NEW.sender_id, 'type', 'new_message')
+      )
     );
-  END IF;
 
   RETURN NEW;
 END;
@@ -371,24 +398,24 @@ SECURITY DEFINER
 AS $$
 BEGIN
   -- Вызов Edge Function через HTTP (требуется pg_net расширение)
-  -- Или используйте Supabase Email Templates
-  
-  -- Пример с pg_net (если доступно):
-  -- PERFORM net.http_post(
-  --   url := current_setting('app.settings.supabase_url') || '/functions/v1/send-email',
-  --   headers := jsonb_build_object(
-  --     'Content-Type', 'application/json',
-  --     'Authorization', 'Bearer ' || current_setting('app.settings.service_role_key')
-  --   ),
-  --   body := jsonb_build_object(
-  --     'to', recipient_email,
-  --     'subject', subject,
-  --     'body', body
-  --   )
-  -- );
+  -- Включаем расширение pg_net если оно не включено
+  -- CREATE EXTENSION IF NOT EXISTS pg_net;
 
-  -- Для начала просто логируем
-  RAISE NOTICE 'Email to %: % - %', recipient_email, subject, body;
+  PERFORM net.http_post(
+    url := 'https://' || current_setting('app.settings.supabase_project_ref') || '.functions.supabase.co/send-email',
+    headers := jsonb_build_object(
+      'Content-Type', 'application/json',
+      'Authorization', 'Bearer ' || current_setting('app.settings.service_role_key')
+    ),
+    body := jsonb_build_object(
+      'to', recipient_email,
+      'subject', subject,
+      'body', body
+    )
+  );
+
+  -- Логируем для отладки
+  RAISE NOTICE 'Email notification triggered for %', recipient_email;
 END;
 $$;
 

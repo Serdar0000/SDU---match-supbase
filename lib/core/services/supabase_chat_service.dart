@@ -1,3 +1,5 @@
+import 'dart:async';
+
 import 'package:supabase_flutter/supabase_flutter.dart';
 import '../../features/chat/domain/entities/chat_message.dart';
 
@@ -16,10 +18,11 @@ class SupabaseChatService {
         .map((data) {
           return data.map((msg) => ChatMessage(
             id: msg['id'] as String,
-            senderId: msg['sender_id'] as String,
+            senderId: msg['sender_id'] as String? ?? '',  // NULL для системных сообщений
             text: msg['text'] as String,
             timestamp: DateTime.parse(msg['created_at'] as String),
             isRead: msg['is_read'] as bool? ?? false,
+            isSystem: msg['is_system'] as bool? ?? false,  // Новое поле
           )).toList();
         });
   }
@@ -184,22 +187,58 @@ class SupabaseChatService {
     );
   }
 
-  /// Stream матчей для текущего пользователя (с Realtime)
+  /// Stream матчей для текущего пользователя (с Realtime).
+  /// Использует два отдельных .eq()-потока (user1 + user2), чтобы
+  /// Realtime-подписки корректно доставляли INSERT-события обоим
+  /// участникам матча.
   Stream<List<Map<String, dynamic>>> getMatchesStream() {
     final uid = _supabase.auth.currentUser?.id;
     if (uid == null) return Stream.value([]);
 
-    return _supabase
+    // ignore: close_sinks  — lifetime tied to the page's StreamBuilder
+    final controller = StreamController<List<Map<String, dynamic>>>();
+
+    List<Map<String, dynamic>> asUser1 = [];
+    List<Map<String, dynamic>> asUser2 = [];
+
+    void emit() {
+      if (controller.isClosed) return;
+      final combined = <String, Map<String, dynamic>>{};
+      for (final m in [...asUser1, ...asUser2]) {
+        combined[m['id'] as String] = m;
+      }
+      final list = combined.values.toList()
+        ..sort((a, b) {
+          final ta = (a['last_message_time'] as String?) ?? '';
+          final tb = (b['last_message_time'] as String?) ?? '';
+          return tb.compareTo(ta);
+        });
+      controller.add(list);
+    }
+
+    final sub1 = _supabase
         .from('matches')
         .stream(primaryKey: ['id'])
-        .order('last_message_time', ascending: false)
-        .map((allMatches) {
-          // Фильтруем матчи где участвует текущий пользователь
-          return allMatches.where((match) {
-            final user1Id = match['user1_id'] as String;
-            final user2Id = match['user2_id'] as String;
-            return user1Id == uid || user2Id == uid;
-          }).toList();
+        .eq('user1_id', uid)
+        .listen((data) {
+          asUser1 = data;
+          emit();
         });
+
+    final sub2 = _supabase
+        .from('matches')
+        .stream(primaryKey: ['id'])
+        .eq('user2_id', uid)
+        .listen((data) {
+          asUser2 = data;
+          emit();
+        });
+
+    controller.onCancel = () {
+      sub1.cancel();
+      sub2.cancel();
+    };
+
+    return controller.stream;
   }
 }

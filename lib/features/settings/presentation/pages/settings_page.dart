@@ -1,11 +1,12 @@
 import 'package:flutter/material.dart';
+import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:supabase_flutter/supabase_flutter.dart';
 import 'package:go_router/go_router.dart';
 import 'package:google_sign_in/google_sign_in.dart';
 
 import '../../../../core/services/settings_service.dart';
-import '../../../../core/services/supabase_service.dart';
 import '../../../../l10n/generated/app_localizations.dart';
+import '../../../../features/moderation/presentation/bloc/moderation_bloc.dart';
 
 class SettingsPage extends StatefulWidget {
   const SettingsPage({super.key});
@@ -15,7 +16,6 @@ class SettingsPage extends StatefulWidget {
 }
 
 class _SettingsPageState extends State<SettingsPage> {
-  final SupabaseService _supabaseService = SupabaseService();
 
   @override
   Widget build(BuildContext context) {
@@ -159,7 +159,9 @@ class _SettingsPageState extends State<SettingsPage> {
       await GoogleSignIn.instance.signOut();
     } catch (_) {}
     await Supabase.instance.client.auth.signOut();
-    if (mounted) context.go('/login');
+    
+    if (!mounted) return;
+    context.go('/login');
   }
 
   Future<void> _handleDeleteAccount(BuildContext context, S l) async {
@@ -182,24 +184,51 @@ class _SettingsPageState extends State<SettingsPage> {
       ),
     );
 
-    if (confirmed == true && mounted) {
-      try {
-        final user = Supabase.instance.client.auth.currentUser;
-        if (user != null) {
-          // Удаляем профиль из Supabase
-          await _supabaseService.deleteProfile(user.id);
-          // Удаляем аккаунт Supabase
-          await Supabase.instance.client.auth.admin.deleteUser(user.id);
-        }
-      } catch (e) {
-        if (mounted) {
-          ScaffoldMessenger.of(context).showSnackBar(
-            SnackBar(content: Text('Error: $e')),
-          );
-          return;
-        }
-      }
-      if (mounted) context.go('/login');
+    if (confirmed != true) return;
+    if (!mounted) return;
+
+    try {
+      final bloc = context.read<ModerationBloc>();
+      final router = GoRouter.of(context);
+      
+      // Слушаем состояние блока один раз (firstWhere закроет подписку)
+      bloc.stream.firstWhere((state) {
+        return state.maybeWhen(
+          success: (message, blockedIds) => true,
+          error: (message) => true,
+          orElse: () => false,
+        );
+      }).then((_) {
+        // После изменения состояния - проверяем что произошло
+        final currentState = bloc.state;
+        currentState.whenOrNull(
+          success: (message, blockedIds) {
+            // Успешно удалён - переходим на login
+            if (mounted) {
+              router.go('/login');
+            }
+          },
+          error: (message) {
+            // Ошибка удаления
+            if (mounted) {
+              ScaffoldMessenger.of(context).showSnackBar(
+                SnackBar(
+                  content: Text('Error: $message'),
+                  backgroundColor: Theme.of(context).colorScheme.error,
+                ),
+              );
+            }
+          },
+        );
+      });
+      
+      // Запускаем процесс удаления аккаунта
+      bloc.add(ModerationEvent.deleteAccountRequested());
+    } catch (e) {
+      if (!mounted) return;
+      ScaffoldMessenger.of(context).showSnackBar(
+        SnackBar(content: Text('Error: $e')),
+      );
     }
   }
 }

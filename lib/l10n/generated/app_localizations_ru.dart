@@ -273,4 +273,63 @@ class SRu extends S {
 
   @override
   String get course => 'курс';
+
+  @override
+  String get report => 'Пожаловаться';
+
+  @override
+  String get block => 'Заблокировать';
+
+  @override
+  String get reportSent => 'Жалоба отправлена';
+
+  @override
+  String get userBlocked => 'Пользователь заблокирован';
+
+  @override
+  String get blockConfirm =>
+      'Вы больше не увидите профиль этого человека и он не увидит ваш.';
+
+  @override
+  String get spam => 'Спам';
+
+  @override
+  String get inappropriate => 'Неуместный контент';
+
+  @override
+  String get fakeProfile => 'Фальшивый профиль';
+
+  @override
+  String get abuse => 'Оскорбления';
+
+  @override
+  String get explicitContent => 'Откровенный контент';
+
+  @override
+  String get underage => 'Подозрение на несовершеннолетие';
+
+  @override
+  String get otherReason => 'Другое';
+
+  @override
+  String get ageRestriction => 'Ограничение по возрасту';
+
+  @override
+  String get ageRestrictionMsg =>
+      'SDU Match доступно только для пользователей 18+ лет. Пожалуйста, вернитесь, когда вам исполнится 18.';
+
+  @override
+  String get reason => 'Причина';
+
+  @override
+  String get additionalDetails => 'Дополнительные детали (опционально)';
+
+  @override
+  String get detailsPlaceholder => 'Расскажите подробнее...';
+
+  @override
+  String get submitReport => 'Отправить жалобу';
+
+  @override
+  String get ok => 'OK';
 }

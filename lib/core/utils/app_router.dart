@@ -5,9 +5,11 @@ import 'package:sdu_match/features/onboarding/presentation/bloc/onboarding_event
 import 'package:supabase_flutter/supabase_flutter.dart';
 
 import '../../core/config/app_config.dart';
+import '../../core/di/injection.dart' as di;
 import '../../core/services/supabase_service.dart';
 import '../../features/auth/presentation/pages/login_page.dart';
 import '../../features/onboarding/presentation/pages/onboarding_page.dart';
+import '../../features/swipe/presentation/bloc/swipe_bloc.dart';
 import '../../features/swipe/presentation/pages/main_wrapper_page.dart';
 import '../../features/profile/presentation/pages/profile_page.dart';
 import '../../features/swipe/presentation/pages/swipe_page.dart';
@@ -124,7 +126,10 @@ class AppRouter {
               GoRoute(
                 path: home,
                 name: 'home',
-                builder: (context, state) => const SwipePage(),
+                builder: (context, state) => BlocProvider<SwipeBloc>(
+                  create: (context) => di.sl<SwipeBloc>(),
+                  child: const SwipePage(),
+                ),
               ),
             ],
           ),

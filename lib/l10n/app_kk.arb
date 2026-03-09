@@ -100,5 +100,15 @@
   "matchTitle": "Сәйкестік!",
   "matchSubtitle": "Сіз бен {name} бір-біріне ұнадыңыздар",
   "writeMessage": "Хабарлама жазу",
-  "continueLabel": "Жалғастыру"
+  "continueLabel": "Жалғастыру",
+  "report": "Шағымдану",
+  "block": "Блоктау",
+  "reportSent": "Шағым жіберілді",
+  "userBlocked": "Пайдаланушы блокталды",
+  "blockConfirm": "Сіз бұл адамның профилін енді көрмейсіз және ол сіздікін көрмейді.",
+  "spam": "Спам",
+  "inappropriate": "Орынсыз мазмұн",
+  "fakeProfile": "Жалған профиль",
+  "abuse": "Қорлау",
+  "otherReason": "Басқа"
 }

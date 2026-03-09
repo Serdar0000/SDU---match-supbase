@@ -273,4 +273,63 @@ class SKk extends S {
 
   @override
   String get course => 'курс';
+
+  @override
+  String get report => 'Шағымдану';
+
+  @override
+  String get block => 'Блоктау';
+
+  @override
+  String get reportSent => 'Шағым жіберілді';
+
+  @override
+  String get userBlocked => 'Пайдаланушы блокталды';
+
+  @override
+  String get blockConfirm =>
+      'Сіз бұл адамның профилін енді көрмейсіз және ол сіздікін көрмейді.';
+
+  @override
+  String get spam => 'Спам';
+
+  @override
+  String get inappropriate => 'Орынсыз мазмұн';
+
+  @override
+  String get fakeProfile => 'Жалған профиль';
+
+  @override
+  String get abuse => 'Қорлау';
+
+  @override
+  String get explicitContent => 'Explicit content';
+
+  @override
+  String get underage => 'Underage suspicion';
+
+  @override
+  String get otherReason => 'Басқа';
+
+  @override
+  String get ageRestriction => 'Age Restriction';
+
+  @override
+  String get ageRestrictionMsg =>
+      'SDU Match is only available for users 18+ years old. Please come back when you turn 18.';
+
+  @override
+  String get reason => 'Reason';
+
+  @override
+  String get additionalDetails => 'Additional details (optional)';
+
+  @override
+  String get detailsPlaceholder => 'Tell us more...';
+
+  @override
+  String get submitReport => 'Submit Report';
+
+  @override
+  String get ok => 'OK';
 }

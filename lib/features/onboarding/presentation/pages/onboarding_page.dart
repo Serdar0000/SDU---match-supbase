@@ -136,6 +136,14 @@ class _OnboardingPageState extends State<OnboardingPage> {
                 InterestsStep(
                   onNext: _nextPage,
                   onBack: _previousPage,
+                  initialSelected: (state is OnboardingInProgress)
+                      ? state.data.interests
+                      : const [],
+                  onInterestsSelected: (list) {
+                    context.read<OnboardingBloc>().add(
+                          OnboardingEvent.interestsUpdated(list),
+                        );
+                  },
                 ),
                 PhotoStep(
                   onComplete: _handleComplete,

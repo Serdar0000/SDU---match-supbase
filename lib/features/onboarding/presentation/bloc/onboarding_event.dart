@@ -14,5 +14,6 @@ class OnboardingEvent with _$OnboardingEvent {
   const factory OnboardingEvent.photoUploadStarted() = OnboardingPhotoUploadStarted;
   const factory OnboardingEvent.photoUploaded(String url) = OnboardingPhotoUploaded;
   const factory OnboardingEvent.photoUploadFailed(String error) = OnboardingPhotoUploadFailed;
+  const factory OnboardingEvent.interestsUpdated(List<String> interests) = OnboardingInterestsUpdated;
   const factory OnboardingEvent.completed() = OnboardingCompleted;
 }

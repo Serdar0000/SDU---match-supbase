@@ -55,7 +55,7 @@ extension OnboardingEventPatterns on OnboardingEvent {
 /// }
 /// ```
 
-@optionalTypeArgs TResult maybeMap<TResult extends Object?>({TResult Function( OnboardingStarted value)?  started,TResult Function( OnboardingNameUpdated value)?  nameUpdated,TResult Function( OnboardingAgeUpdated value)?  ageUpdated,TResult Function( OnboardingGenderSelected value)?  genderSelected,TResult Function( OnboardingLookingForSelected value)?  lookingForSelected,TResult Function( OnboardingFacultySelected value)?  facultySelected,TResult Function( OnboardingYearOfStudySelected value)?  yearOfStudySelected,TResult Function( OnboardingPhotoUploadStarted value)?  photoUploadStarted,TResult Function( OnboardingPhotoUploaded value)?  photoUploaded,TResult Function( OnboardingPhotoUploadFailed value)?  photoUploadFailed,TResult Function( OnboardingCompleted value)?  completed,required TResult orElse(),}){
+@optionalTypeArgs TResult maybeMap<TResult extends Object?>({TResult Function( OnboardingStarted value)?  started,TResult Function( OnboardingNameUpdated value)?  nameUpdated,TResult Function( OnboardingAgeUpdated value)?  ageUpdated,TResult Function( OnboardingGenderSelected value)?  genderSelected,TResult Function( OnboardingLookingForSelected value)?  lookingForSelected,TResult Function( OnboardingFacultySelected value)?  facultySelected,TResult Function( OnboardingYearOfStudySelected value)?  yearOfStudySelected,TResult Function( OnboardingPhotoUploadStarted value)?  photoUploadStarted,TResult Function( OnboardingPhotoUploaded value)?  photoUploaded,TResult Function( OnboardingPhotoUploadFailed value)?  photoUploadFailed,TResult Function( OnboardingInterestsUpdated value)?  interestsUpdated,TResult Function( OnboardingCompleted value)?  completed,required TResult orElse(),}){
 final _that = this;
 switch (_that) {
 case OnboardingStarted() when started != null:
@@ -68,7 +68,8 @@ return facultySelected(_that);case OnboardingYearOfStudySelected() when yearOfSt
 return yearOfStudySelected(_that);case OnboardingPhotoUploadStarted() when photoUploadStarted != null:
 return photoUploadStarted(_that);case OnboardingPhotoUploaded() when photoUploaded != null:
 return photoUploaded(_that);case OnboardingPhotoUploadFailed() when photoUploadFailed != null:
-return photoUploadFailed(_that);case OnboardingCompleted() when completed != null:
+return photoUploadFailed(_that);case OnboardingInterestsUpdated() when interestsUpdated != null:
+return interestsUpdated(_that);case OnboardingCompleted() when completed != null:
 return completed(_that);case _:
   return orElse();
 
@@ -87,7 +88,7 @@ return completed(_that);case _:
 /// }
 /// ```
 
-@optionalTypeArgs TResult map<TResult extends Object?>({required TResult Function( OnboardingStarted value)  started,required TResult Function( OnboardingNameUpdated value)  nameUpdated,required TResult Function( OnboardingAgeUpdated value)  ageUpdated,required TResult Function( OnboardingGenderSelected value)  genderSelected,required TResult Function( OnboardingLookingForSelected value)  lookingForSelected,required TResult Function( OnboardingFacultySelected value)  facultySelected,required TResult Function( OnboardingYearOfStudySelected value)  yearOfStudySelected,required TResult Function( OnboardingPhotoUploadStarted value)  photoUploadStarted,required TResult Function( OnboardingPhotoUploaded value)  photoUploaded,required TResult Function( OnboardingPhotoUploadFailed value)  photoUploadFailed,required TResult Function( OnboardingCompleted value)  completed,}){
+@optionalTypeArgs TResult map<TResult extends Object?>({required TResult Function( OnboardingStarted value)  started,required TResult Function( OnboardingNameUpdated value)  nameUpdated,required TResult Function( OnboardingAgeUpdated value)  ageUpdated,required TResult Function( OnboardingGenderSelected value)  genderSelected,required TResult Function( OnboardingLookingForSelected value)  lookingForSelected,required TResult Function( OnboardingFacultySelected value)  facultySelected,required TResult Function( OnboardingYearOfStudySelected value)  yearOfStudySelected,required TResult Function( OnboardingPhotoUploadStarted value)  photoUploadStarted,required TResult Function( OnboardingPhotoUploaded value)  photoUploaded,required TResult Function( OnboardingPhotoUploadFailed value)  photoUploadFailed,required TResult Function( OnboardingInterestsUpdated value)  interestsUpdated,required TResult Function( OnboardingCompleted value)  completed,}){
 final _that = this;
 switch (_that) {
 case OnboardingStarted():
@@ -100,7 +101,8 @@ return facultySelected(_that);case OnboardingYearOfStudySelected():
 return yearOfStudySelected(_that);case OnboardingPhotoUploadStarted():
 return photoUploadStarted(_that);case OnboardingPhotoUploaded():
 return photoUploaded(_that);case OnboardingPhotoUploadFailed():
-return photoUploadFailed(_that);case OnboardingCompleted():
+return photoUploadFailed(_that);case OnboardingInterestsUpdated():
+return interestsUpdated(_that);case OnboardingCompleted():
 return completed(_that);case _:
   throw StateError('Unexpected subclass');
 
@@ -118,7 +120,7 @@ return completed(_that);case _:
 /// }
 /// ```
 
-@optionalTypeArgs TResult? mapOrNull<TResult extends Object?>({TResult? Function( OnboardingStarted value)?  started,TResult? Function( OnboardingNameUpdated value)?  nameUpdated,TResult? Function( OnboardingAgeUpdated value)?  ageUpdated,TResult? Function( OnboardingGenderSelected value)?  genderSelected,TResult? Function( OnboardingLookingForSelected value)?  lookingForSelected,TResult? Function( OnboardingFacultySelected value)?  facultySelected,TResult? Function( OnboardingYearOfStudySelected value)?  yearOfStudySelected,TResult? Function( OnboardingPhotoUploadStarted value)?  photoUploadStarted,TResult? Function( OnboardingPhotoUploaded value)?  photoUploaded,TResult? Function( OnboardingPhotoUploadFailed value)?  photoUploadFailed,TResult? Function( OnboardingCompleted value)?  completed,}){
+@optionalTypeArgs TResult? mapOrNull<TResult extends Object?>({TResult? Function( OnboardingStarted value)?  started,TResult? Function( OnboardingNameUpdated value)?  nameUpdated,TResult? Function( OnboardingAgeUpdated value)?  ageUpdated,TResult? Function( OnboardingGenderSelected value)?  genderSelected,TResult? Function( OnboardingLookingForSelected value)?  lookingForSelected,TResult? Function( OnboardingFacultySelected value)?  facultySelected,TResult? Function( OnboardingYearOfStudySelected value)?  yearOfStudySelected,TResult? Function( OnboardingPhotoUploadStarted value)?  photoUploadStarted,TResult? Function( OnboardingPhotoUploaded value)?  photoUploaded,TResult? Function( OnboardingPhotoUploadFailed value)?  photoUploadFailed,TResult? Function( OnboardingInterestsUpdated value)?  interestsUpdated,TResult? Function( OnboardingCompleted value)?  completed,}){
 final _that = this;
 switch (_that) {
 case OnboardingStarted() when started != null:
@@ -131,7 +133,8 @@ return facultySelected(_that);case OnboardingYearOfStudySelected() when yearOfSt
 return yearOfStudySelected(_that);case OnboardingPhotoUploadStarted() when photoUploadStarted != null:
 return photoUploadStarted(_that);case OnboardingPhotoUploaded() when photoUploaded != null:
 return photoUploaded(_that);case OnboardingPhotoUploadFailed() when photoUploadFailed != null:
-return photoUploadFailed(_that);case OnboardingCompleted() when completed != null:
+return photoUploadFailed(_that);case OnboardingInterestsUpdated() when interestsUpdated != null:
+return interestsUpdated(_that);case OnboardingCompleted() when completed != null:
 return completed(_that);case _:
   return null;
 
@@ -149,7 +152,7 @@ return completed(_that);case _:
 /// }
 /// ```
 
-@optionalTypeArgs TResult maybeWhen<TResult extends Object?>({TResult Function()?  started,TResult Function( String name)?  nameUpdated,TResult Function( int age)?  ageUpdated,TResult Function( String gender)?  genderSelected,TResult Function( String lookingFor)?  lookingForSelected,TResult Function( String faculty)?  facultySelected,TResult Function( int year)?  yearOfStudySelected,TResult Function()?  photoUploadStarted,TResult Function( String url)?  photoUploaded,TResult Function( String error)?  photoUploadFailed,TResult Function()?  completed,required TResult orElse(),}) {final _that = this;
+@optionalTypeArgs TResult maybeWhen<TResult extends Object?>({TResult Function()?  started,TResult Function( String name)?  nameUpdated,TResult Function( int age)?  ageUpdated,TResult Function( String gender)?  genderSelected,TResult Function( String lookingFor)?  lookingForSelected,TResult Function( String faculty)?  facultySelected,TResult Function( int year)?  yearOfStudySelected,TResult Function()?  photoUploadStarted,TResult Function( String url)?  photoUploaded,TResult Function( String error)?  photoUploadFailed,TResult Function( List<String> interests)?  interestsUpdated,TResult Function()?  completed,required TResult orElse(),}) {final _that = this;
 switch (_that) {
 case OnboardingStarted() when started != null:
 return started();case OnboardingNameUpdated() when nameUpdated != null:
@@ -161,7 +164,8 @@ return facultySelected(_that.faculty);case OnboardingYearOfStudySelected() when 
 return yearOfStudySelected(_that.year);case OnboardingPhotoUploadStarted() when photoUploadStarted != null:
 return photoUploadStarted();case OnboardingPhotoUploaded() when photoUploaded != null:
 return photoUploaded(_that.url);case OnboardingPhotoUploadFailed() when photoUploadFailed != null:
-return photoUploadFailed(_that.error);case OnboardingCompleted() when completed != null:
+return photoUploadFailed(_that.error);case OnboardingInterestsUpdated() when interestsUpdated != null:
+return interestsUpdated(_that.interests);case OnboardingCompleted() when completed != null:
 return completed();case _:
   return orElse();
 
@@ -180,7 +184,7 @@ return completed();case _:
 /// }
 /// ```
 
-@optionalTypeArgs TResult when<TResult extends Object?>({required TResult Function()  started,required TResult Function( String name)  nameUpdated,required TResult Function( int age)  ageUpdated,required TResult Function( String gender)  genderSelected,required TResult Function( String lookingFor)  lookingForSelected,required TResult Function( String faculty)  facultySelected,required TResult Function( int year)  yearOfStudySelected,required TResult Function()  photoUploadStarted,required TResult Function( String url)  photoUploaded,required TResult Function( String error)  photoUploadFailed,required TResult Function()  completed,}) {final _that = this;
+@optionalTypeArgs TResult when<TResult extends Object?>({required TResult Function()  started,required TResult Function( String name)  nameUpdated,required TResult Function( int age)  ageUpdated,required TResult Function( String gender)  genderSelected,required TResult Function( String lookingFor)  lookingForSelected,required TResult Function( String faculty)  facultySelected,required TResult Function( int year)  yearOfStudySelected,required TResult Function()  photoUploadStarted,required TResult Function( String url)  photoUploaded,required TResult Function( String error)  photoUploadFailed,required TResult Function( List<String> interests)  interestsUpdated,required TResult Function()  completed,}) {final _that = this;
 switch (_that) {
 case OnboardingStarted():
 return started();case OnboardingNameUpdated():
@@ -192,7 +196,8 @@ return facultySelected(_that.faculty);case OnboardingYearOfStudySelected():
 return yearOfStudySelected(_that.year);case OnboardingPhotoUploadStarted():
 return photoUploadStarted();case OnboardingPhotoUploaded():
 return photoUploaded(_that.url);case OnboardingPhotoUploadFailed():
-return photoUploadFailed(_that.error);case OnboardingCompleted():
+return photoUploadFailed(_that.error);case OnboardingInterestsUpdated():
+return interestsUpdated(_that.interests);case OnboardingCompleted():
 return completed();case _:
   throw StateError('Unexpected subclass');
 
@@ -210,7 +215,7 @@ return completed();case _:
 /// }
 /// ```
 
-@optionalTypeArgs TResult? whenOrNull<TResult extends Object?>({TResult? Function()?  started,TResult? Function( String name)?  nameUpdated,TResult? Function( int age)?  ageUpdated,TResult? Function( String gender)?  genderSelected,TResult? Function( String lookingFor)?  lookingForSelected,TResult? Function( String faculty)?  facultySelected,TResult? Function( int year)?  yearOfStudySelected,TResult? Function()?  photoUploadStarted,TResult? Function( String url)?  photoUploaded,TResult? Function( String error)?  photoUploadFailed,TResult? Function()?  completed,}) {final _that = this;
+@optionalTypeArgs TResult? whenOrNull<TResult extends Object?>({TResult? Function()?  started,TResult? Function( String name)?  nameUpdated,TResult? Function( int age)?  ageUpdated,TResult? Function( String gender)?  genderSelected,TResult? Function( String lookingFor)?  lookingForSelected,TResult? Function( String faculty)?  facultySelected,TResult? Function( int year)?  yearOfStudySelected,TResult? Function()?  photoUploadStarted,TResult? Function( String url)?  photoUploaded,TResult? Function( String error)?  photoUploadFailed,TResult? Function( List<String> interests)?  interestsUpdated,TResult? Function()?  completed,}) {final _that = this;
 switch (_that) {
 case OnboardingStarted() when started != null:
 return started();case OnboardingNameUpdated() when nameUpdated != null:
@@ -222,7 +227,8 @@ return facultySelected(_that.faculty);case OnboardingYearOfStudySelected() when 
 return yearOfStudySelected(_that.year);case OnboardingPhotoUploadStarted() when photoUploadStarted != null:
 return photoUploadStarted();case OnboardingPhotoUploaded() when photoUploaded != null:
 return photoUploaded(_that.url);case OnboardingPhotoUploadFailed() when photoUploadFailed != null:
-return photoUploadFailed(_that.error);case OnboardingCompleted() when completed != null:
+return photoUploadFailed(_that.error);case OnboardingInterestsUpdated() when interestsUpdated != null:
+return interestsUpdated(_that.interests);case OnboardingCompleted() when completed != null:
 return completed();case _:
   return null;
 
@@ -817,6 +823,78 @@ class _$OnboardingPhotoUploadFailedCopyWithImpl<$Res>
   return _then(OnboardingPhotoUploadFailed(
 null == error ? _self.error : error // ignore: cast_nullable_to_non_nullable
 as String,
+  ));
+}
+
+
+}
+
+/// @nodoc
+
+
+class OnboardingInterestsUpdated implements OnboardingEvent {
+  const OnboardingInterestsUpdated(final  List<String> interests): _interests = interests;
+  
+
+ final  List<String> _interests;
+ List<String> get interests {
+  if (_interests is EqualUnmodifiableListView) return _interests;
+  // ignore: implicit_dynamic_type
+  return EqualUnmodifiableListView(_interests);
+}
+
+
+/// Create a copy of OnboardingEvent
+/// with the given fields replaced by the non-null parameter values.
+@JsonKey(includeFromJson: false, includeToJson: false)
+@pragma('vm:prefer-inline')
+$OnboardingInterestsUpdatedCopyWith<OnboardingInterestsUpdated> get copyWith => _$OnboardingInterestsUpdatedCopyWithImpl<OnboardingInterestsUpdated>(this, _$identity);
+
+
+
+@override
+bool operator ==(Object other) {
+  return identical(this, other) || (other.runtimeType == runtimeType&&other is OnboardingInterestsUpdated&&const DeepCollectionEquality().equals(other._interests, _interests));
+}
+
+
+@override
+int get hashCode => Object.hash(runtimeType,const DeepCollectionEquality().hash(_interests));
+
+@override
+String toString() {
+  return 'OnboardingEvent.interestsUpdated(interests: $interests)';
+}
+
+
+}
+
+/// @nodoc
+abstract mixin class $OnboardingInterestsUpdatedCopyWith<$Res> implements $OnboardingEventCopyWith<$Res> {
+  factory $OnboardingInterestsUpdatedCopyWith(OnboardingInterestsUpdated value, $Res Function(OnboardingInterestsUpdated) _then) = _$OnboardingInterestsUpdatedCopyWithImpl;
+@useResult
+$Res call({
+ List<String> interests
+});
+
+
+
+
+}
+/// @nodoc
+class _$OnboardingInterestsUpdatedCopyWithImpl<$Res>
+    implements $OnboardingInterestsUpdatedCopyWith<$Res> {
+  _$OnboardingInterestsUpdatedCopyWithImpl(this._self, this._then);
+
+  final OnboardingInterestsUpdated _self;
+  final $Res Function(OnboardingInterestsUpdated) _then;
+
+/// Create a copy of OnboardingEvent
+/// with the given fields replaced by the non-null parameter values.
+@pragma('vm:prefer-inline') $Res call({Object? interests = null,}) {
+  return _then(OnboardingInterestsUpdated(
+null == interests ? _self._interests : interests // ignore: cast_nullable_to_non_nullable
+as List<String>,
   ));
 }
 

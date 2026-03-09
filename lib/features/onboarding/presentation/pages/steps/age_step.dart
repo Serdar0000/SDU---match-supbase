@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import '../../../../../core/theme/app_theme.dart';
+import '../../../../../l10n/generated/app_localizations.dart';
 import '../../bloc/onboarding_bloc.dart';
 import '../../bloc/onboarding_event.dart';
 import '../../bloc/onboarding_state.dart';
@@ -28,15 +29,39 @@ class _AgeStepState extends State<AgeStep> {
     }
   }
 
-  bool _isValid() => _selectedAge >= 17 && _selectedAge <= 100;
+  bool _isValid() => _selectedAge >= 18 && _selectedAge <= 100;
 
   void _handleNext() {
+    if (_selectedAge < 18) {
+      // Hard block для <18
+      _showAgeRestrictedDialog();
+      return;
+    }
+
     if (_isValid()) {
       context.read<OnboardingBloc>().add(
             OnboardingEvent.ageUpdated(_selectedAge),
           );
       widget.onNext();
     }
+  }
+
+  void _showAgeRestrictedDialog() {
+    final l = S.of(context)!;
+    showDialog(
+      context: context,
+      barrierDismissible: false,
+      builder: (context) => AlertDialog(
+        title: Text(l.ageRestriction),
+        content: Text(l.ageRestrictionMsg),
+        actions: [
+          ElevatedButton(
+            onPressed: () => Navigator.pop(context),
+            child: Text(l.ok),
+          ),
+        ],
+      ),
+    );
   }
 
   @override
@@ -84,7 +109,7 @@ class _AgeStepState extends State<AgeStep> {
                   mainAxisAlignment: MainAxisAlignment.center,
                   children: [
                     IconButton(
-                      onPressed: _selectedAge > 17
+                      onPressed: _selectedAge > 18
                           ? () => setState(() => _selectedAge--)
                           : null,
                       icon: const Icon(Icons.remove_circle_outline, size: 40),
@@ -105,7 +130,7 @@ class _AgeStepState extends State<AgeStep> {
           ),
           const SizedBox(height: 16),
           Text(
-            'Возраст: 17-100 лет',
+            'Возраст: 18-100 лет',
             style: TextStyle(
               fontSize: 14,
               color: Colors.grey.shade600,

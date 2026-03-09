@@ -1,0 +1,30 @@
+{
+  "name": "sdu-match-functions",
+  "description": "Firebase Cloud Functions for SDU Match dating app",
+  "type": "module",
+  "engines": {
+    "node": "20"
+  },
+  "scripts": {
+    "build": "tsc --build",
+    "start": "firebase emulator:start --only functions",
+    "deploy": "firebase deploy --only functions",
+    "deploy:prod": "firebase deploy --only functions --project prod",
+    "logs": "firebase functions:log",
+    "logs:follow": "firebase functions:log --tail",
+    "test": "jest",
+    "lint": "eslint src"
+  },
+  "main": "lib/index.js",
+  "dependencies": {
+    "firebase-admin": "^12.0.0",
+    "firebase-functions": "^5.0.0"
+  },
+  "devDependencies": {
+    "@types/node": "^20.0.0",
+    "@typescript-eslint/eslint-plugin": "^6.0.0",
+    "@typescript-eslint/parser": "^6.0.0",
+    "eslint": "^8.0.0",
+    "typescript": "^5.0.0"
+  }
+}

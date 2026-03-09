@@ -18,7 +18,7 @@ class SupabaseService {
       'interests': profile.interests,
       'photos': [profile.imageUrl], // Одно фото в массив
       'bio': profile.bio,
-      'stars_given': profile.starsGiven ?? 0, // Супер-лайки (по умолчанию 0)
+      'stars_given': profile.starsGiven, // Супер-лайки (по умолчанию 0)
       'updated_at': DateTime.now().toIso8601String(),
     };
 
@@ -89,23 +89,133 @@ class SupabaseService {
         .update({'fcm_token': token}).eq('id', uid);
   }
 
-  /// Получить профили для свайпа (исключая себя и уже просвайпанных)
+  // ==================== REPORTS & BLOCKS ====================
+
+  /// Подать жалобу на пользователя
+  Future<void> reportUser({
+    required String reportedId,
+    required String reason,
+    String? details,
+  }) async {
+    final uid = _supabase.auth.currentUser?.id;
+    if (uid == null) return;
+
+    await _supabase.from('reports').insert({
+      'reporter_id': uid,
+      'reported_id': reportedId,
+      'reason': reason,
+      'details': details,
+    });
+  }
+
+  /// Заблокировать пользователя
+  Future<void> blockUser(String blockedId) async {
+    final uid = _supabase.auth.currentUser?.id;
+    if (uid == null) return;
+
+    await _supabase.from('blocks').insert({
+      'blocker_id': uid,
+      'blocked_id': blockedId,
+    });
+  }
+
+  /// Проверить, заблокирован ли пользователь текущим
+  Future<bool> isBlocked(String otherId) async {
+    final uid = _supabase.auth.currentUser?.id;
+    if (uid == null) return false;
+
+    final response = await _supabase
+        .from('blocks')
+        .select('id')
+        .eq('blocker_id', uid)
+        .eq('blocked_id', otherId)
+        .maybeSingle();
+
+    return response != null;
+  }
+
+  /// Получить список ID заблокированных пользователей (в обе стороны)
+  Future<List<String>> getBlockedUserIds() async {
+    final uid = _supabase.auth.currentUser?.id;
+    if (uid == null) return [];
+
+    // Кто заблокирован мною
+    final blockedByMe = await _supabase
+        .from('blocks')
+        .select('blocked_id')
+        .eq('blocker_id', uid);
+
+    // Кто заблокировал меня
+    final blockingMe = await _supabase
+        .from('blocks')
+        .select('blocker_id')
+        .eq('blocked_id', uid);
+
+    final ids = <String>{};
+    for (final row in blockedByMe) {
+      ids.add(row['blocked_id'] as String);
+    }
+    for (final row in blockingMe) {
+      ids.add(row['blocker_id'] as String);
+    }
+
+    return ids.toList();
+  }
+
+  /// Получить профили для свайпа (исключая себя, просвайпанных и заблокированных)
   Future<List<UserProfile>> getProfilesToSwipe({
     required String currentUid,
     required List<String> swipedIds,
     String? genderFilter,
   }) async {
-    // Базовый запрос - исключаем себя
-    var query = _supabase.from('profiles').select().neq('id', currentUid);
+    // 1. Получаем список заблокированных
+    final blockedIds = await getBlockedUserIds();
+    
+    // 2. Объединяем с уже просвайпанными
+    final excludeIds = {currentUid, ...swipedIds, ...blockedIds}.toList();
 
-    // Фильтр по полу, если указан
+    // 3. Базовый запрос
+    var query = _supabase.from('profiles').select();
+    
+    // 4. Фильтруем (not in list)
+    if (excludeIds.isNotEmpty) {
+      query = query.not('id', 'in', '(${excludeIds.join(",")})');
+    }
+    
     if (genderFilter != null && genderFilter != 'all') {
       query = query.eq('gender', genderFilter);
     }
 
-    final response = await query.limit(50);
+    final response = await query.limit(20);
+    
+    return (response as List).map((data) => UserProfile(
+      id: data['id'] as String,
+      name: data['name'] ?? '',
+      age: data['age'] ?? 18,
+      faculty: data['major'] ?? '',
+      yearOfStudy: 1,
+      imageUrl: (data['photos'] as List?)?.isNotEmpty == true
+          ? (data['photos'] as List).first
+          : '',
+      interests: List<String>.from(data['interests'] ?? []),
+      bio: data['bio'] ?? '',
+      email: data['email'] ?? '',
+      gender: data['gender'] ?? 'other',
+      lookingFor: 'all',
+      starsGiven: data['stars_given'] ?? 0,
+    )).toList();
+  }
 
-    // Фильтруем уже свайпнутых на клиенте
+  /// Получить список профилей с фильтрацией по полу и исключением свайпнутых
+  Future<List<UserProfile>> getProfiles({
+    String? genderFilter,
+    required List<String> swipedIds,
+  }) async {
+    var query = _supabase.from('profiles').select();
+    if (genderFilter != null && genderFilter != 'all') {
+      query = query.eq('gender', genderFilter);
+    }
+    final response = await query.limit(50);
     final profiles = (response as List)
         .where((data) => !swipedIds.contains(data['id']))
         .map((data) => UserProfile(
@@ -124,30 +234,31 @@ class SupabaseService {
               lookingFor: 'all',
             ))
         .toList();
-
     return profiles;
   }
 
   // ==================== СВАЙПЫ ====================
 
-  /// Сохранить свайп. Возвращает matchId если это взаимный лайк, иначе null
+  /// Сохранить свайп. Возвращает matchId если это взаимный лайк, иначе null.
+  /// Использует SECURITY DEFINER RPC чтобы обойти RLS при проверке обратного лайка.
   Future<String?> saveSwipe({
     required String fromUid,
     required String toUid,
-    required String action, // 'like' или 'pass'
+    required String action, // 'like', 'superlike' или 'pass'
   }) async {
-    await _supabase.from('swipes').insert({
-      'from_user_id': fromUid,
-      'to_user_id': toUid,
-      'action': action,
-      'created_at': DateTime.now().toIso8601String(),
-    });
+    // Нормализуем 'superlike' в 'like' для сохранения в БД
+    final dbAction = action == 'superlike' ? 'like' : action;
 
-    // Если это лайк — проверяем на взаимность
-    if (action == 'like') {
-      return await _checkForMatch(fromUid, toUid);
-    }
-    return null;
+    final result = await _supabase.rpc(
+      'save_swipe_and_check_match',
+      params: {
+        'p_from_uid': fromUid,
+        'p_to_uid': toUid,
+        'p_action': dbAction,
+      },
+    );
+
+    return result as String?;
   }
 
   /// Получить список ID профилей, которые мы уже свайпнули
@@ -161,41 +272,6 @@ class SupabaseService {
   }
 
   // ==================== МАТЧИ ====================
-
-  /// Проверить взаимный лайк и создать матч. Возвращает matchId если матч создан.
-  Future<String?> _checkForMatch(String fromUid, String toUid) async {
-    // Проверяем: лайкнул ли toUid нас (fromUid)?
-    final reverseSwipe = await _supabase
-        .from('swipes')
-        .select()
-        .eq('from_user_id', toUid)
-        .eq('to_user_id', fromUid)
-        .eq('action', 'like')
-        .maybeSingle();
-
-    if (reverseSwipe != null) {
-      // Взаимный лайк! Создаём матч
-      final sorted = [fromUid, toUid]..sort();
-      final matchData = {
-        'user1_id': sorted[0],
-        'user2_id': sorted[1],
-        'last_message': '',
-        'last_message_time': DateTime.now().toIso8601String(),
-        'unread_count_user1': 0,
-        'unread_count_user2': fromUid == sorted[0] ? 1 : 0,
-        'created_at': DateTime.now().toIso8601String(),
-      };
-
-      final response = await _supabase
-          .from('matches')
-          .insert(matchData)
-          .select()
-          .single();
-
-      return response['id'] as String;
-    }
-    return null;
-  }
 
   /// Получить матчи текущего пользователя
   Future<List<Map<String, dynamic>>> getMatches(String uid) async {

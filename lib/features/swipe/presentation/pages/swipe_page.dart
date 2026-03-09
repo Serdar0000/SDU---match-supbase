@@ -1,15 +1,15 @@
 ﻿import 'package:flutter/material.dart';
+import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:flutter_card_swiper/flutter_card_swiper.dart';
+import 'package:go_router/go_router.dart';
 import 'package:supabase_flutter/supabase_flutter.dart';
-import 'package:sdu_match/core/config/app_config.dart';
 import 'package:sdu_match/core/theme/app_theme.dart';
-import 'package:sdu_match/core/services/supabase_service.dart';
-import 'package:sdu_match/core/di/injection.dart' as di;
-import 'package:sdu_match/core/services/mock_data_service.dart';
 import '../../domain/entities/user_profile.dart';
+import '../../presentation/bloc/swipe_bloc.dart';
 import '../widgets/profile_card.dart';
 import '../widgets/swipe_action_buttons.dart';
-import '../../../chat/presentation/widgets/match_popup.dart';
+import '../widgets/match_overlay.dart';
+import '../../../moderation/presentation/bloc/moderation_bloc.dart';
 
 class SwipePage extends StatefulWidget {
   const SwipePage({super.key});
@@ -20,59 +20,28 @@ class SwipePage extends StatefulWidget {
 
 class _SwipePageState extends State<SwipePage> {
   final CardSwiperController controller = CardSwiperController();
-  final SupabaseService _supabaseService = SupabaseService();
-  late final MockDataService? _mockService;
-  List<UserProfile> profiles = [];
-  bool isLoading = true;
-  bool isDone = false; // показали все карточки в этой сессии
-  UserProfile? _currentUserProfile;
-
-  // Храним IDs тех, кого свайпнули В ЭТОЙ СЕССИИ — чтобы никогда не перезаписать
-  final Set<String> _swipedThisSession = {};
 
   @override
   void initState() {
     super.initState();
-    if (AppConfig.DEV_MODE) {
-      _mockService = di.sl<MockDataService>();
-    } else {
-      _mockService = null;
-    }
-    _loadProfiles();
+    // Инициализируем SwipeBloc после первого фрейма
+    WidgetsBinding.instance.addPostFrameCallback((_) {
+      _initializeSwipeBloc();
+    });
   }
 
-  Future<void> _loadProfiles() async {
-    // 🚧 DEV MODE: Используем моковые данные
-    if (AppConfig.DEV_MODE && _mockService != null) {
-      await Future.delayed(const Duration(milliseconds: 300));
-      setState(() {
-        _currentUserProfile = _mockService.currentUserProfile;
-        profiles = _mockService.swipeProfiles;
-        isLoading = false;
-      });
-      return;
+  void _initializeSwipeBloc() {
+    try {
+      final user = Supabase.instance.client.auth.currentUser;
+      if (user != null && mounted) {
+        debugPrint('🚀 [SwipePage] Initializing SwipeBloc for user: ${user.id}');
+        context.read<SwipeBloc>().add(LoadInfos(user.id));
+      } else {
+        debugPrint('❌ [SwipePage] No user found or widget not mounted');
+      }
+    } catch (e) {
+      debugPrint('❌ [SwipePage] Error initializing SwipeBloc: $e');
     }
-    
-    final user = Supabase.instance.client.auth.currentUser;
-    if (user == null) return;
-
-    // Загружаем свой профиль (для фильтра lookingFor)
-    _currentUserProfile = await _supabaseService.getUserProfile(user.id);
-
-    // Получаем ID уже просвайпанных профилей из Supabase
-    final swipedIds = await _supabaseService.getSwipedProfileIds(user.id);
-
-    // Загружаем профили с фильтром по полу
-    final loadedProfiles = await _supabaseService.getProfilesToSwipe(
-      currentUid: user.id,
-      swipedIds: swipedIds,
-      genderFilter: _currentUserProfile?.lookingFor,
-    );
-
-    setState(() {
-      profiles = loadedProfiles;
-      isLoading = false;
-    });
   }
 
   @override
@@ -81,136 +50,191 @@ class _SwipePageState extends State<SwipePage> {
     super.dispose();
   }
 
-  bool _onSwipe(
-    int previousIndex,
-    int? currentIndex,
-    CardSwiperDirection direction,
-  ) {
-    final profile = profiles[previousIndex];
-    String action;
-    
-    // Определяем действие по направлению
-    if (direction == CardSwiperDirection.right) {
-      action = 'like';
-    } else if (direction == CardSwiperDirection.top) {
-      action = 'superlike'; // Супер-лайк!
-      _incrementStarCounter(); // 🌟 Увеличиваем счетчик
-    } else {
-      action = 'pass';
-    }
-
-    debugPrint('Свайп $direction: профиль ${profile.name} ($action)');
-
-    // Защита от повторной записи
-    if (_swipedThisSession.contains(profile.id)) {
-      if (currentIndex == null) {
-        setState(() => isDone = true);
-      }
-      return true;
-    }
-    
-    _swipedThisSession.add(profile.id);
-    
-    // 🚧 DEV MODE: Используем моковую логику
-    if (AppConfig.DEV_MODE) {
-      _handleSwipeAsyncMock(profile: profile, action: action);
-    } else {
-      final user = Supabase.instance.client.auth.currentUser;
-      if (user != null) {
-        _handleSwipeAsync(fromUid: user.id, profile: profile, action: action);
-      }
-    }
-
-    // Если это была последняя карточка — переходим в состояние «всё просмотрено»
-    if (currentIndex == null) {
-      setState(() => isDone = true);
-    }
-
-    return true;
+  @override
+  Widget build(BuildContext context) {
+    return BlocListener<SwipeBloc, SwipeState>(
+      listener: (context, state) {
+        // Слушаем ModerationBloc для обновления блокировок
+        if (state is SwipeLoaded) {
+          context.read<ModerationBloc>().stream.listen((modState) {
+            modState.maybeWhen(
+              blockedIdsLoaded: (ids) {
+                final user = Supabase.instance.client.auth.currentUser;
+                if (user != null && mounted) {
+                  context.read<SwipeBloc>().add(LoadInfos(user.id));
+                }
+              },
+              orElse: () {},
+            );
+          });
+        }
+      },
+      child: BlocBuilder<SwipeBloc, SwipeState>(
+        builder: (context, state) {
+          return Scaffold(
+            appBar: AppBar(
+              title: const Text(
+                'SDU Match',
+                style: TextStyle(
+                  color: AppColors.primaryBlue,
+                  fontWeight: FontWeight.bold,
+                ),
+              ),
+              actions: [
+                IconButton(
+                  icon: const Icon(Icons.tune, color: AppColors.primaryBlue),
+                  onPressed: () {
+                    // TODO: Открыть фильтры
+                  },
+                ),
+              ],
+            ),
+            body: Stack(
+              children: [
+                SafeArea(
+                  child: Column(
+                    children: [
+                      Expanded(
+                        child: _buildMainContent(state, context),
+                      ),
+                      if (state is! SwipeMatchState)
+                        SwipeActionButtons(
+                          onSuperLike: () => _handleSuperLike(state, context),
+                          onPass: () => _handlePass(state, context),
+                          onLike: () => _handleLike(state, context),
+                          isEnabled: state is SwipeLoaded,
+                        ),
+                      if (state is! SwipeMatchState) const SizedBox(height: 8),
+                    ],
+                  ),
+                ),
+                // MatchOverlay поверх всего
+                if (state is SwipeMatchState)
+                  MatchOverlay(
+                    matchedUser: state.matchedUser,
+                    currentUser: _getCurrentUserProfile(state),
+                    onKeepSwiping: () {
+                      context.read<SwipeBloc>().add(CloseMatchEvent());
+                    },
+                    onSendMessage: () {
+                      final matchId = state.matchId;
+                      final matchedUser = state.matchedUser;
+                      context.read<SwipeBloc>().add(CloseMatchEvent());
+                      if (matchId != null) {
+                        context.push('/chat/$matchId', extra: matchedUser);
+                      } else {
+                        debugPrint('⚠️ matchId is null, cannot open chat');
+                      }
+                    },
+                  ),
+              ],
+            ),
+          );
+        },
+      ),
+    );
   }
 
-  Future<void> _handleSwipeAsync({
-    required String fromUid,
-    required UserProfile profile,
-    required String action,
-  }) async {
-    try {
-      final matchId = await _supabaseService.saveSwipe(
-        fromUid: fromUid,
-        toUid: profile.id,
-        action: action,
-      );
-
-      // Если есть матч — показываем попап
-      if (matchId != null && mounted) {
-        await showDialog<void>(
-          context: context,
-          barrierDismissible: false,
-          barrierColor: Colors.transparent,
-          builder: (_) => MatchPopup(
-            matchedProfile: profile,
-            matchId: matchId,
-            myProfile: _currentUserProfile,
-          ),
-        );
-      }
-    } catch (e) {
-      debugPrint('Ошибка записи свайпа: $e');
+  Widget _buildMainContent(SwipeState state, BuildContext context) {
+    if (state is SwipeLoading) {
+      return const Center(child: CircularProgressIndicator());
     }
-  }
 
-  /// 🎭 MOCK VERSION: Симуляция матча для DEV_MODE
-  Future<void> _handleSwipeAsyncMock({
-    required UserProfile profile,
-    required String action,
-  }) async {
-    // Показываем матч с 50% вероятностью при лайке или суперлайке
-    if ((action == 'like' || action == 'superlike') && 
-        DateTime.now().millisecond % 2 == 0 && 
-        mounted) {
-      await showDialog<void>(
-        context: context,
-        barrierDismissible: false,
-        barrierColor: Colors.transparent,
-        builder: (_) => MatchPopup(
-          matchedProfile: profile,
-          matchId: 'mock-match-${profile.id}',
-          myProfile: _currentUserProfile,
+    if (state is SwipeError) {
+      return Center(
+        child: Column(
+          mainAxisAlignment: MainAxisAlignment.center,
+          children: [
+            const Icon(Icons.error_outline, size: 64, color: Colors.red),
+            const SizedBox(height: 16),
+            Text(
+              'Ошибка: ${state.message}',
+              textAlign: TextAlign.center,
+              style: const TextStyle(fontSize: 16),
+            ),
+            const SizedBox(height: 24),
+            ElevatedButton(
+              onPressed: () {
+                final user = Supabase.instance.client.auth.currentUser;
+                if (user != null) {
+                  context.read<SwipeBloc>().add(LoadInfos(user.id));
+                }
+              },
+              child: const Text('Повторить'),
+            ),
+          ],
         ),
       );
     }
-  }
 
-  /// 🌟 Увеличиваем счетчик супер-лайков у текущего пользователя
-  Future<void> _incrementStarCounter() async {
-    if (_currentUserProfile == null) return;
-    
-    // 🚧 DEV MODE: Просто обновляем локально
-    if (AppConfig.DEV_MODE) {
-      setState(() {
-        _currentUserProfile = _currentUserProfile!.copyWith(
-          starsGiven: _currentUserProfile!.starsGiven + 1,
-        );
-      });
-      debugPrint('🌟 Супер-лайк раздан! Теперь у вас: ${_currentUserProfile!.starsGiven} звездочек');
-      return;
+    if (state is SwipeLoaded) {
+      if (state.profiles.isEmpty) {
+        return _buildEmptyState(context);
+      }
+
+      return CardSwiper(
+        controller: controller,
+        cardsCount: state.profiles.length,
+        isLoop: false,
+        numberOfCardsDisplayed: state.profiles.length.clamp(1, 2),
+        onSwipe: (previousIndex, currentIndex, direction) =>
+            _onSwipe(previousIndex, currentIndex, direction, state, context),
+        padding: const EdgeInsets.all(24.0),
+        allowedSwipeDirection: const AllowedSwipeDirection.only(
+          left: true,
+          right: true,
+          up: true,
+        ),
+        cardBuilder: (
+          context,
+          index,
+          horizontalThresholdPercentage,
+          verticalThresholdPercentage,
+        ) {
+          return ProfileCard(
+            profile: state.profiles[index],
+            swipeProgress: horizontalThresholdPercentage,
+          );
+        },
+      );
     }
-    
-    final user = Supabase.instance.client.auth.currentUser;
-    if (user == null) return;
-    
-    final newCount = _currentUserProfile!.starsGiven + 1;
-    await _supabaseService.updateUserProfile(user.id, {'stars_given': newCount});
-    
-    setState(() {
-      _currentUserProfile = _currentUserProfile!.copyWith(starsGiven: newCount);
-    });
-    
-    debugPrint('🌟 Супер-лайк раздан! Теперь у вас: $newCount звездочек');
+
+    if (state is SwipeMatchState) {
+      if (state.profiles.isEmpty) {
+        return _buildEmptyState(context);
+      }
+
+      return CardSwiper(
+        controller: controller,
+        cardsCount: state.profiles.length,
+        isLoop: false,
+        numberOfCardsDisplayed: state.profiles.length.clamp(1, 2),
+        onSwipe: (previousIndex, currentIndex, direction) =>
+            _onSwipe(previousIndex, currentIndex, direction, state, context),
+        padding: const EdgeInsets.all(24.0),
+        allowedSwipeDirection: const AllowedSwipeDirection.only(
+          left: true,
+          right: true,
+          up: true,
+        ),
+        cardBuilder: (
+          context,
+          index,
+          horizontalThresholdPercentage,
+          verticalThresholdPercentage,
+        ) {
+          return ProfileCard(
+            profile: state.profiles[index],
+            swipeProgress: horizontalThresholdPercentage,
+          );
+        },
+      );
+    }
+
+    return const Center(child: Text('Unknown state'));
   }
 
-  /// Экран "все карточки просмотрены"
-  Widget _buildEmptyState() {
+  Widget _buildEmptyState(BuildContext context) {
     return Center(
       child: Padding(
         padding: const EdgeInsets.symmetric(horizontal: 32),
@@ -233,12 +257,10 @@ class _SwipePageState extends State<SwipePage> {
             const SizedBox(height: 24),
             OutlinedButton.icon(
               onPressed: () {
-                setState(() {
-                  isLoading = true;
-                  isDone = false;
-                  _swipedThisSession.clear();
-                });
-                _loadProfiles();
+                final user = Supabase.instance.client.auth.currentUser;
+                if (user != null) {
+                  context.read<SwipeBloc>().add(LoadInfos(user.id));
+                }
               },
               icon: const Icon(Icons.refresh_rounded),
               label: const Text('Обновить'),
@@ -249,89 +271,56 @@ class _SwipePageState extends State<SwipePage> {
     );
   }
 
-  void _handleLike() {
-    if (profiles.isNotEmpty && !isLoading && !isDone) {
+  bool _onSwipe(
+    int previousIndex,
+    int? currentIndex,
+    CardSwiperDirection direction,
+    SwipeState state,
+    BuildContext context,
+  ) {
+    if (state is! SwipeLoaded && state is! SwipeMatchState) {
+      return false;
+    }
+
+    final profiles = state is SwipeLoaded ? state.profiles : (state as SwipeMatchState).profiles;
+    
+    if (previousIndex < 0 || previousIndex >= profiles.length) {
+      return false;
+    }
+
+    final profile = profiles[previousIndex];
+
+    if (direction == CardSwiperDirection.right) {
+      context.read<SwipeBloc>().add(SwipeRightEvent(profile));
+    } else if (direction == CardSwiperDirection.top) {
+      context.read<SwipeBloc>().add(SwipeRightEvent(profile)); // Superlike also counts as like
+    } else {
+      context.read<SwipeBloc>().add(SwipeLeftEvent(profile));
+    }
+
+    return true;
+  }
+
+  void _handleLike(SwipeState state, BuildContext context) {
+    if (state is SwipeLoaded && state.profiles.isNotEmpty) {
       controller.swipe(CardSwiperDirection.right);
     }
   }
 
-  void _handlePass() {
-    if (profiles.isNotEmpty && !isLoading && !isDone) {
+  void _handlePass(SwipeState state, BuildContext context) {
+    if (state is SwipeLoaded && state.profiles.isNotEmpty) {
       controller.swipe(CardSwiperDirection.left);
     }
   }
 
-  void _handleSuperLike() {
-    if (profiles.isNotEmpty && !isLoading && !isDone) {
+  void _handleSuperLike(SwipeState state, BuildContext context) {
+    if (state is SwipeLoaded && state.profiles.isNotEmpty) {
       controller.swipe(CardSwiperDirection.top);
     }
   }
 
-  @override
-  Widget build(BuildContext context) {
-    final canInteract = !isLoading && !isDone && profiles.isNotEmpty;
-
-    return Scaffold(
-      appBar: AppBar(
-        title: const Text(
-          'SDU Match',
-          style: TextStyle(
-            color: AppColors.primaryBlue,
-            fontWeight: FontWeight.bold,
-          ),
-        ),
-        actions: [
-          IconButton(
-            icon: const Icon(Icons.tune, color: AppColors.primaryBlue),
-            onPressed: () {
-              // TODO: Открыть фильтры
-            },
-          ),
-        ],
-      ),
-      body: SafeArea(
-        child: Column(
-          children: [
-            Expanded(
-              child: isLoading
-                  ? const Center(child: CircularProgressIndicator())
-                  : (profiles.isEmpty || isDone)
-                      ? _buildEmptyState()
-                      : CardSwiper(
-                          controller: controller,
-                          cardsCount: profiles.length,
-                          isLoop: false,
-                          numberOfCardsDisplayed: profiles.length.clamp(1, 2),
-                          onSwipe: _onSwipe,
-                          padding: const EdgeInsets.all(24.0),
-                          allowedSwipeDirection: const AllowedSwipeDirection.only(
-                            left: true,
-                            right: true,
-                          ),
-                          cardBuilder: (
-                            context,
-                            index,
-                            horizontalThresholdPercentage,
-                            verticalThresholdPercentage,
-                          ) {
-                            return ProfileCard(
-                              profile: profiles[index],
-                              swipeProgress: horizontalThresholdPercentage,
-                            );
-                          },
-                        ),
-            ),
-            // Кнопки действий
-            SwipeActionButtons(
-              onSuperLike: _handleSuperLike,
-              onPass: _handlePass,
-              onLike: _handleLike,
-              isEnabled: canInteract,
-            ),
-            const SizedBox(height: 8),
-          ],
-        ),
-      ),
-    );
+  UserProfile? _getCurrentUserProfile(SwipeState state) {
+    // TODO: Get current user profile from your state or context
+    return null; // Будет использоваться для показа фото пользователя в оверлее
   }
 }

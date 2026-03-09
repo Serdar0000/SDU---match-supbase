@@ -5,7 +5,8 @@ import '../../../../core/theme/app_theme.dart';
 import '../../../../core/services/cloudinary_service.dart';
 import '../../../swipe/domain/entities/user_profile.dart';
 
-/// Попап появляется поверх SwipePage при взаимном лайке
+/// ✨ MatchOverlay - Full-screen popup that appears when mutual like is detected
+/// Shows both users' names and photos with beautiful animations
 class MatchPopup extends StatefulWidget {
   final UserProfile matchedProfile;
   final UserProfile? myProfile;
@@ -26,6 +27,7 @@ class _MatchPopupState extends State<MatchPopup>
     with TickerProviderStateMixin {
   late AnimationController _mainController;
   late AnimationController _heartsController;
+  late AnimationController _sparklesController;
 
   late Animation<double> _bgFadeAnim;
   late Animation<double> _titleScaleAnim;
@@ -33,14 +35,21 @@ class _MatchPopupState extends State<MatchPopup>
   late Animation<double> _buttonsSlideAnim;
 
   final List<_HeartParticle> _particles = [];
+  final List<_SparkleParticle> _sparkles = [];
   final Random _random = Random();
 
   @override
   void initState() {
     super.initState();
 
+    // Heart particles
     for (int i = 0; i < 18; i++) {
       _particles.add(_HeartParticle(random: _random));
+    }
+
+    // Sparkle particles (around avatars)
+    for (int i = 0; i < 24; i++) {
+      _sparkles.add(_SparkleParticle(random: _random));
     }
 
     _mainController = AnimationController(
@@ -51,6 +60,11 @@ class _MatchPopupState extends State<MatchPopup>
     _heartsController = AnimationController(
       vsync: this,
       duration: const Duration(seconds: 3),
+    )..repeat();
+
+    _sparklesController = AnimationController(
+      vsync: this,
+      duration: const Duration(seconds: 2),
     )..repeat();
 
     _bgFadeAnim = CurvedAnimation(
@@ -80,6 +94,7 @@ class _MatchPopupState extends State<MatchPopup>
   void dispose() {
     _mainController.dispose();
     _heartsController.dispose();
+    _sparklesController.dispose();
     super.dispose();
   }
 
@@ -123,6 +138,17 @@ class _MatchPopupState extends State<MatchPopup>
                 painter: _HeartParticlesPainter(
                   particles: _particles,
                   progress: _heartsController.value,
+                ),
+              ),
+            ),
+
+            // ✨ Sparkles animation (around avatars and throughout)
+            AnimatedBuilder(
+              animation: _sparklesController,
+              builder: (_, __) => CustomPaint(
+                painter: _SparkleParticlesPainter(
+                  particles: _sparkles,
+                  progress: _sparklesController.value,
                 ),
               ),
             ),
@@ -303,29 +329,44 @@ class _MatchPopupState extends State<MatchPopup>
     return Container(
       decoration: BoxDecoration(
         shape: BoxShape.circle,
-        border: Border.all(color: borderColor, width: 3),
         boxShadow: [
+          // Outer glow
           BoxShadow(
-            color: borderColor.withValues(alpha: 0.4),
-            blurRadius: 16,
-            spreadRadius: 2,
+            color: borderColor.withValues(alpha: 0.6),
+            blurRadius: 32,
+            spreadRadius: 6,
+          ),
+          // Inner glow
+          BoxShadow(
+            color: borderColor.withValues(alpha: 0.3),
+            blurRadius: 48,
+            spreadRadius: 12,
           ),
         ],
       ),
-      child: CircleAvatar(
-        radius: 62,
-        backgroundImage: imageUrl.isNotEmpty ? NetworkImage(imageUrl) : null,
-        backgroundColor: Colors.grey.shade800,
-        child: imageUrl.isEmpty
-            ? Text(
-                name.isNotEmpty ? name[0].toUpperCase() : '?',
-                style: const TextStyle(
-                  fontSize: 36,
-                  fontWeight: FontWeight.bold,
-                  color: Colors.white,
-                ),
-              )
-            : null,
+      child: Container(
+        decoration: BoxDecoration(
+          shape: BoxShape.circle,
+          border: Border.all(
+            color: borderColor,
+            width: 4,
+          ),
+        ),
+        child: CircleAvatar(
+          radius: 62,
+          backgroundImage: imageUrl.isNotEmpty ? NetworkImage(imageUrl) : null,
+          backgroundColor: Colors.grey.shade800,
+          child: imageUrl.isEmpty
+              ? Text(
+                  name.isNotEmpty ? name[0].toUpperCase() : '?',
+                  style: const TextStyle(
+                    fontSize: 36,
+                    fontWeight: FontWeight.bold,
+                    color: Colors.white,
+                  ),
+                )
+              : null,
+        ),
       ),
     );
   }
@@ -395,4 +436,69 @@ class _HeartParticlesPainter extends CustomPainter {
 
   @override
   bool shouldRepaint(_HeartParticlesPainter old) => old.progress != progress;
+}
+
+// ─────────────────────────────────────────────
+// ✨ Sparkle Particles (новые)
+// ─────────────────────────────────────────────
+
+class _SparkleParticle {
+  late double x;
+  late double y;
+  late double size;
+  late double speed;
+  late double opacity;
+  late double angle;
+
+  _SparkleParticle({required Random random}) {
+    x = random.nextDouble();
+    y = random.nextDouble() * 0.6 + 0.2; // Concentrate in middle-upper area
+    size = 2.0 + random.nextDouble() * 6.0;
+    speed = 0.3 + random.nextDouble() * 0.7;
+    opacity = 0.3 + random.nextDouble() * 0.7;
+    angle = random.nextDouble() * 2 * pi;
+  }
+}
+
+class _SparkleParticlesPainter extends CustomPainter {
+  final List<_SparkleParticle> particles;
+  final double progress;
+
+  _SparkleParticlesPainter({required this.particles, required this.progress});
+
+  @override
+  void paint(Canvas canvas, Size size) {
+    final paint = Paint()
+      ..style = PaintingStyle.fill
+      ..blendMode = BlendMode.screen; // Additive blending for sparkles
+
+    for (final p in particles) {
+      // Pulsing sparkle effect
+      final t = (progress + p.angle / (2 * pi)) % 1.0;
+      final opacity = (sin(t * 2 * pi + p.angle) * 0.5 + 0.5) * p.opacity;
+      
+      if (opacity <= 0.01) continue;
+
+      final x = size.width * p.x;
+      final y = size.height * p.y;
+
+      paint.color = const Color(0xFFFFD700).withValues(alpha: opacity); // Gold sparkles
+
+      // Draw star-like sparkle
+      canvas.drawCircle(Offset(x, y), p.size, paint);
+      
+      // Add small rays
+      final rayLength = p.size * 3;
+      for (int i = 0; i < 4; i++) {
+        final angle = (i * pi / 2) + p.angle;
+        final x1 = x + cos(angle) * rayLength;
+        final y1 = y + sin(angle) * rayLength;
+        canvas.drawLine(Offset(x, y), Offset(x1, y1),
+            paint..strokeWidth = p.size * 0.5);
+      }
+    }
+  }
+
+  @override
+  bool shouldRepaint(_SparkleParticlesPainter old) => old.progress != progress;
 }

@@ -47,11 +47,13 @@ class _NameStepState extends State<NameStep> {
     if (_isValid()) {
       // Убираем клавиатуру перед переходом
       FocusScope.of(context).unfocus();
-      
       context.read<OnboardingBloc>().add(
-            OnboardingEvent.nameUpdated(_controller.text.trim()),
-          );
-      widget.onNext();
+        OnboardingEvent.nameUpdated(_controller.text.trim()),
+      );
+      // Добавляем небольшую задержку, чтобы клавиатура успела скрыться
+      Future.delayed(const Duration(milliseconds: 250), () {
+        widget.onNext();
+      });
     }
   }
 

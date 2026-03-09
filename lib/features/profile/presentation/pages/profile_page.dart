@@ -21,9 +21,7 @@ class ProfilePage extends StatefulWidget {
 
 class _ProfilePageState extends State<ProfilePage> {
   final SupabaseService _supabaseService = SupabaseService();
-  final CloudinaryService _cloudinaryService = CloudinaryService();
   late final MockDataService? _mockService;
-  final ImagePicker _imagePicker = ImagePicker();
   UserProfile? _myProfile;
   bool _isLoading = true;
   bool _isUploadingPhoto = false;

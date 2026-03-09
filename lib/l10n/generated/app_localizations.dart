@@ -620,6 +620,120 @@ abstract class S {
   /// In en, this message translates to:
   /// **'course'**
   String get course;
+
+  /// No description provided for @report.
+  ///
+  /// In en, this message translates to:
+  /// **'Report'**
+  String get report;
+
+  /// No description provided for @block.
+  ///
+  /// In en, this message translates to:
+  /// **'Block'**
+  String get block;
+
+  /// No description provided for @reportSent.
+  ///
+  /// In en, this message translates to:
+  /// **'Report sent'**
+  String get reportSent;
+
+  /// No description provided for @userBlocked.
+  ///
+  /// In en, this message translates to:
+  /// **'User blocked'**
+  String get userBlocked;
+
+  /// No description provided for @blockConfirm.
+  ///
+  /// In en, this message translates to:
+  /// **'You will no longer see this person\'s profile and they won\'t see yours.'**
+  String get blockConfirm;
+
+  /// No description provided for @spam.
+  ///
+  /// In en, this message translates to:
+  /// **'Spam'**
+  String get spam;
+
+  /// No description provided for @inappropriate.
+  ///
+  /// In en, this message translates to:
+  /// **'Inappropriate content'**
+  String get inappropriate;
+
+  /// No description provided for @fakeProfile.
+  ///
+  /// In en, this message translates to:
+  /// **'Fake profile'**
+  String get fakeProfile;
+
+  /// No description provided for @abuse.
+  ///
+  /// In en, this message translates to:
+  /// **'Abuse'**
+  String get abuse;
+
+  /// No description provided for @explicitContent.
+  ///
+  /// In en, this message translates to:
+  /// **'Explicit content'**
+  String get explicitContent;
+
+  /// No description provided for @underage.
+  ///
+  /// In en, this message translates to:
+  /// **'Underage suspicion'**
+  String get underage;
+
+  /// No description provided for @otherReason.
+  ///
+  /// In en, this message translates to:
+  /// **'Other'**
+  String get otherReason;
+
+  /// No description provided for @ageRestriction.
+  ///
+  /// In en, this message translates to:
+  /// **'Age Restriction'**
+  String get ageRestriction;
+
+  /// No description provided for @ageRestrictionMsg.
+  ///
+  /// In en, this message translates to:
+  /// **'SDU Match is only available for users 18+ years old. Please come back when you turn 18.'**
+  String get ageRestrictionMsg;
+
+  /// No description provided for @reason.
+  ///
+  /// In en, this message translates to:
+  /// **'Reason'**
+  String get reason;
+
+  /// No description provided for @additionalDetails.
+  ///
+  /// In en, this message translates to:
+  /// **'Additional details (optional)'**
+  String get additionalDetails;
+
+  /// No description provided for @detailsPlaceholder.
+  ///
+  /// In en, this message translates to:
+  /// **'Tell us more...'**
+  String get detailsPlaceholder;
+
+  /// No description provided for @submitReport.
+  ///
+  /// In en, this message translates to:
+  /// **'Submit Report'**
+  String get submitReport;
+
+  /// No description provided for @ok.
+  ///
+  /// In en, this message translates to:
+  /// **'OK'**
+  String get ok;
 }
 
 class _SDelegate extends LocalizationsDelegate<S> {

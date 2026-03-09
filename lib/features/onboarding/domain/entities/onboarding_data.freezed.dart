@@ -13,15 +13,8 @@ part of 'onboarding_data.dart';
 T _$identity<T>(T value) => value;
 /// @nodoc
 mixin _$OnboardingData {
-  String get name;
-  int get age;
-  String? get gender;
-  String? get lookingFor;
-  String? get faculty;
-  int? get yearOfStudy;
-  String? get photoUrl;
-  bool get isPhotoUploading;
 
+ String get name; int get age; String? get gender; String? get lookingFor; String? get faculty; int? get yearOfStudy; String? get photoUrl; bool get isPhotoUploading; List<String> get interests;
 /// Create a copy of OnboardingData
 /// with the given fields replaced by the non-null parameter values.
 @JsonKey(includeFromJson: false, includeToJson: false)
@@ -32,16 +25,16 @@ $OnboardingDataCopyWith<OnboardingData> get copyWith => _$OnboardingDataCopyWith
 
 @override
 bool operator ==(Object other) {
-  return identical(this, other) || (other.runtimeType == runtimeType&&other is OnboardingData&&(identical(other.name, name) || other.name == name)&&(identical(other.age, age) || other.age == age)&&(identical(other.gender, gender) || other.gender == gender)&&(identical(other.lookingFor, lookingFor) || other.lookingFor == lookingFor)&&(identical(other.faculty, faculty) || other.faculty == faculty)&&(identical(other.yearOfStudy, yearOfStudy) || other.yearOfStudy == yearOfStudy)&&(identical(other.photoUrl, photoUrl) || other.photoUrl == photoUrl)&&(identical(other.isPhotoUploading, isPhotoUploading) || other.isPhotoUploading == isPhotoUploading));
+  return identical(this, other) || (other.runtimeType == runtimeType&&other is OnboardingData&&(identical(other.name, name) || other.name == name)&&(identical(other.age, age) || other.age == age)&&(identical(other.gender, gender) || other.gender == gender)&&(identical(other.lookingFor, lookingFor) || other.lookingFor == lookingFor)&&(identical(other.faculty, faculty) || other.faculty == faculty)&&(identical(other.yearOfStudy, yearOfStudy) || other.yearOfStudy == yearOfStudy)&&(identical(other.photoUrl, photoUrl) || other.photoUrl == photoUrl)&&(identical(other.isPhotoUploading, isPhotoUploading) || other.isPhotoUploading == isPhotoUploading)&&const DeepCollectionEquality().equals(other.interests, interests));
 }
 
 
 @override
-int get hashCode => Object.hash(runtimeType,name,age,gender,lookingFor,faculty,yearOfStudy,photoUrl,isPhotoUploading);
+int get hashCode => Object.hash(runtimeType,name,age,gender,lookingFor,faculty,yearOfStudy,photoUrl,isPhotoUploading,const DeepCollectionEquality().hash(interests));
 
 @override
 String toString() {
-  return 'OnboardingData(name: $name, age: $age, gender: $gender, lookingFor: $lookingFor, faculty: $faculty, yearOfStudy: $yearOfStudy, photoUrl: $photoUrl, isPhotoUploading: $isPhotoUploading)';
+  return 'OnboardingData(name: $name, age: $age, gender: $gender, lookingFor: $lookingFor, faculty: $faculty, yearOfStudy: $yearOfStudy, photoUrl: $photoUrl, isPhotoUploading: $isPhotoUploading, interests: $interests)';
 }
 
 
@@ -52,7 +45,7 @@ abstract mixin class $OnboardingDataCopyWith<$Res>  {
   factory $OnboardingDataCopyWith(OnboardingData value, $Res Function(OnboardingData) _then) = _$OnboardingDataCopyWithImpl;
 @useResult
 $Res call({
- String name, int age, String? gender, String? lookingFor, String? faculty, int? yearOfStudy, String? photoUrl, bool isPhotoUploading
+ String name, int age, String? gender, String? lookingFor, String? faculty, int? yearOfStudy, String? photoUrl, bool isPhotoUploading, List<String> interests
 });
 
 
@@ -69,7 +62,7 @@ class _$OnboardingDataCopyWithImpl<$Res>
 
 /// Create a copy of OnboardingData
 /// with the given fields replaced by the non-null parameter values.
-@pragma('vm:prefer-inline') @override $Res call({Object? name = null,Object? age = null,Object? gender = freezed,Object? lookingFor = freezed,Object? faculty = freezed,Object? yearOfStudy = freezed,Object? photoUrl = freezed,Object? isPhotoUploading = null,}) {
+@pragma('vm:prefer-inline') @override $Res call({Object? name = null,Object? age = null,Object? gender = freezed,Object? lookingFor = freezed,Object? faculty = freezed,Object? yearOfStudy = freezed,Object? photoUrl = freezed,Object? isPhotoUploading = null,Object? interests = null,}) {
   return _then(_self.copyWith(
 name: null == name ? _self.name : name // ignore: cast_nullable_to_non_nullable
 as String,age: null == age ? _self.age : age // ignore: cast_nullable_to_non_nullable
@@ -79,7 +72,8 @@ as String?,faculty: freezed == faculty ? _self.faculty : faculty // ignore: cast
 as String?,yearOfStudy: freezed == yearOfStudy ? _self.yearOfStudy : yearOfStudy // ignore: cast_nullable_to_non_nullable
 as int?,photoUrl: freezed == photoUrl ? _self.photoUrl : photoUrl // ignore: cast_nullable_to_non_nullable
 as String?,isPhotoUploading: null == isPhotoUploading ? _self.isPhotoUploading : isPhotoUploading // ignore: cast_nullable_to_non_nullable
-as bool,
+as bool,interests: null == interests ? _self.interests : interests // ignore: cast_nullable_to_non_nullable
+as List<String>,
   ));
 }
 
@@ -164,10 +158,10 @@ return $default(_that);case _:
 /// }
 /// ```
 
-@optionalTypeArgs TResult maybeWhen<TResult extends Object?>(TResult Function( String name,  int age,  String? gender,  String? lookingFor,  String? faculty,  int? yearOfStudy,  String? photoUrl,  bool isPhotoUploading)?  $default,{required TResult orElse(),}) {final _that = this;
+@optionalTypeArgs TResult maybeWhen<TResult extends Object?>(TResult Function( String name,  int age,  String? gender,  String? lookingFor,  String? faculty,  int? yearOfStudy,  String? photoUrl,  bool isPhotoUploading,  List<String> interests)?  $default,{required TResult orElse(),}) {final _that = this;
 switch (_that) {
 case _OnboardingData() when $default != null:
-return $default(_that.name,_that.age,_that.gender,_that.lookingFor,_that.faculty,_that.yearOfStudy,_that.photoUrl,_that.isPhotoUploading);case _:
+return $default(_that.name,_that.age,_that.gender,_that.lookingFor,_that.faculty,_that.yearOfStudy,_that.photoUrl,_that.isPhotoUploading,_that.interests);case _:
   return orElse();
 
 }
@@ -185,10 +179,10 @@ return $default(_that.name,_that.age,_that.gender,_that.lookingFor,_that.faculty
 /// }
 /// ```
 
-@optionalTypeArgs TResult when<TResult extends Object?>(TResult Function( String name,  int age,  String? gender,  String? lookingFor,  String? faculty,  int? yearOfStudy,  String? photoUrl,  bool isPhotoUploading)  $default,) {final _that = this;
+@optionalTypeArgs TResult when<TResult extends Object?>(TResult Function( String name,  int age,  String? gender,  String? lookingFor,  String? faculty,  int? yearOfStudy,  String? photoUrl,  bool isPhotoUploading,  List<String> interests)  $default,) {final _that = this;
 switch (_that) {
 case _OnboardingData():
-return $default(_that.name,_that.age,_that.gender,_that.lookingFor,_that.faculty,_that.yearOfStudy,_that.photoUrl,_that.isPhotoUploading);case _:
+return $default(_that.name,_that.age,_that.gender,_that.lookingFor,_that.faculty,_that.yearOfStudy,_that.photoUrl,_that.isPhotoUploading,_that.interests);case _:
   throw StateError('Unexpected subclass');
 
 }
@@ -205,10 +199,10 @@ return $default(_that.name,_that.age,_that.gender,_that.lookingFor,_that.faculty
 /// }
 /// ```
 
-@optionalTypeArgs TResult? whenOrNull<TResult extends Object?>(TResult? Function( String name,  int age,  String? gender,  String? lookingFor,  String? faculty,  int? yearOfStudy,  String? photoUrl,  bool isPhotoUploading)?  $default,) {final _that = this;
+@optionalTypeArgs TResult? whenOrNull<TResult extends Object?>(TResult? Function( String name,  int age,  String? gender,  String? lookingFor,  String? faculty,  int? yearOfStudy,  String? photoUrl,  bool isPhotoUploading,  List<String> interests)?  $default,) {final _that = this;
 switch (_that) {
 case _OnboardingData() when $default != null:
-return $default(_that.name,_that.age,_that.gender,_that.lookingFor,_that.faculty,_that.yearOfStudy,_that.photoUrl,_that.isPhotoUploading);case _:
+return $default(_that.name,_that.age,_that.gender,_that.lookingFor,_that.faculty,_that.yearOfStudy,_that.photoUrl,_that.isPhotoUploading,_that.interests);case _:
   return null;
 
 }
@@ -220,7 +214,7 @@ return $default(_that.name,_that.age,_that.gender,_that.lookingFor,_that.faculty
 
 
 class _OnboardingData extends OnboardingData {
-  const _OnboardingData({this.name = '', this.age = 20, this.gender, this.lookingFor, this.faculty, this.yearOfStudy, this.photoUrl, this.isPhotoUploading = false}): super._();
+  const _OnboardingData({this.name = '', this.age = 20, this.gender, this.lookingFor, this.faculty, this.yearOfStudy, this.photoUrl, this.isPhotoUploading = false, final  List<String> interests = const <String>[]}): _interests = interests,super._();
   
 
 @override@JsonKey() final  String name;
@@ -231,6 +225,13 @@ class _OnboardingData extends OnboardingData {
 @override final  int? yearOfStudy;
 @override final  String? photoUrl;
 @override@JsonKey() final  bool isPhotoUploading;
+ final  List<String> _interests;
+@override@JsonKey() List<String> get interests {
+  if (_interests is EqualUnmodifiableListView) return _interests;
+  // ignore: implicit_dynamic_type
+  return EqualUnmodifiableListView(_interests);
+}
+
 
 /// Create a copy of OnboardingData
 /// with the given fields replaced by the non-null parameter values.
@@ -242,16 +243,16 @@ _$OnboardingDataCopyWith<_OnboardingData> get copyWith => __$OnboardingDataCopyW
 
 @override
 bool operator ==(Object other) {
-  return identical(this, other) || (other.runtimeType == runtimeType&&other is _OnboardingData&&(identical(other.name, name) || other.name == name)&&(identical(other.age, age) || other.age == age)&&(identical(other.gender, gender) || other.gender == gender)&&(identical(other.lookingFor, lookingFor) || other.lookingFor == lookingFor)&&(identical(other.faculty, faculty) || other.faculty == faculty)&&(identical(other.yearOfStudy, yearOfStudy) || other.yearOfStudy == yearOfStudy)&&(identical(other.photoUrl, photoUrl) || other.photoUrl == photoUrl)&&(identical(other.isPhotoUploading, isPhotoUploading) || other.isPhotoUploading == isPhotoUploading));
+  return identical(this, other) || (other.runtimeType == runtimeType&&other is _OnboardingData&&(identical(other.name, name) || other.name == name)&&(identical(other.age, age) || other.age == age)&&(identical(other.gender, gender) || other.gender == gender)&&(identical(other.lookingFor, lookingFor) || other.lookingFor == lookingFor)&&(identical(other.faculty, faculty) || other.faculty == faculty)&&(identical(other.yearOfStudy, yearOfStudy) || other.yearOfStudy == yearOfStudy)&&(identical(other.photoUrl, photoUrl) || other.photoUrl == photoUrl)&&(identical(other.isPhotoUploading, isPhotoUploading) || other.isPhotoUploading == isPhotoUploading)&&const DeepCollectionEquality().equals(other._interests, _interests));
 }
 
 
 @override
-int get hashCode => Object.hash(runtimeType,name,age,gender,lookingFor,faculty,yearOfStudy,photoUrl,isPhotoUploading);
+int get hashCode => Object.hash(runtimeType,name,age,gender,lookingFor,faculty,yearOfStudy,photoUrl,isPhotoUploading,const DeepCollectionEquality().hash(_interests));
 
 @override
 String toString() {
-  return 'OnboardingData(name: $name, age: $age, gender: $gender, lookingFor: $lookingFor, faculty: $faculty, yearOfStudy: $yearOfStudy, photoUrl: $photoUrl, isPhotoUploading: $isPhotoUploading)';
+  return 'OnboardingData(name: $name, age: $age, gender: $gender, lookingFor: $lookingFor, faculty: $faculty, yearOfStudy: $yearOfStudy, photoUrl: $photoUrl, isPhotoUploading: $isPhotoUploading, interests: $interests)';
 }
 
 
@@ -262,7 +263,7 @@ abstract mixin class _$OnboardingDataCopyWith<$Res> implements $OnboardingDataCo
   factory _$OnboardingDataCopyWith(_OnboardingData value, $Res Function(_OnboardingData) _then) = __$OnboardingDataCopyWithImpl;
 @override @useResult
 $Res call({
- String name, int age, String? gender, String? lookingFor, String? faculty, int? yearOfStudy, String? photoUrl, bool isPhotoUploading
+ String name, int age, String? gender, String? lookingFor, String? faculty, int? yearOfStudy, String? photoUrl, bool isPhotoUploading, List<String> interests
 });
 
 
@@ -279,7 +280,7 @@ class __$OnboardingDataCopyWithImpl<$Res>
 
 /// Create a copy of OnboardingData
 /// with the given fields replaced by the non-null parameter values.
-@override @pragma('vm:prefer-inline') $Res call({Object? name = null,Object? age = null,Object? gender = freezed,Object? lookingFor = freezed,Object? faculty = freezed,Object? yearOfStudy = freezed,Object? photoUrl = freezed,Object? isPhotoUploading = null,}) {
+@override @pragma('vm:prefer-inline') $Res call({Object? name = null,Object? age = null,Object? gender = freezed,Object? lookingFor = freezed,Object? faculty = freezed,Object? yearOfStudy = freezed,Object? photoUrl = freezed,Object? isPhotoUploading = null,Object? interests = null,}) {
   return _then(_OnboardingData(
 name: null == name ? _self.name : name // ignore: cast_nullable_to_non_nullable
 as String,age: null == age ? _self.age : age // ignore: cast_nullable_to_non_nullable
@@ -289,7 +290,8 @@ as String?,faculty: freezed == faculty ? _self.faculty : faculty // ignore: cast
 as String?,yearOfStudy: freezed == yearOfStudy ? _self.yearOfStudy : yearOfStudy // ignore: cast_nullable_to_non_nullable
 as int?,photoUrl: freezed == photoUrl ? _self.photoUrl : photoUrl // ignore: cast_nullable_to_non_nullable
 as String?,isPhotoUploading: null == isPhotoUploading ? _self.isPhotoUploading : isPhotoUploading // ignore: cast_nullable_to_non_nullable
-as bool,
+as bool,interests: null == interests ? _self._interests : interests // ignore: cast_nullable_to_non_nullable
+as List<String>,
   ));
 }
 

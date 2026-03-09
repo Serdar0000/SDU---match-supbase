@@ -16,6 +16,7 @@ abstract class OnboardingData with _$OnboardingData {
     int? yearOfStudy,
     String? photoUrl,
     @Default(false) bool isPhotoUploading,
+    @Default(<String>[]) List<String> interests,
   }) = _OnboardingData;
 
   /// Проверка завершенности онбординга
@@ -27,7 +28,8 @@ abstract class OnboardingData with _$OnboardingData {
       lookingFor != null &&
       faculty != null &&
       yearOfStudy != null &&
-      photoUrl != null;
+      photoUrl != null &&
+      interests.isNotEmpty;
 
   /// Прогресс онбординга (0.0 - 1.0)
   double get progress {
@@ -37,7 +39,8 @@ abstract class OnboardingData with _$OnboardingData {
     if (gender != null) completed++;
     if (lookingFor != null) completed++;
     if (faculty != null && yearOfStudy != null) completed++;
+    if (interests.isNotEmpty) completed++;
     if (photoUrl != null) completed++;
-    return completed / 6.0;
+    return completed / 7.0;
   }
 }

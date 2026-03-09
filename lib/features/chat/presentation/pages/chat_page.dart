@@ -1,11 +1,13 @@
 ﻿import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
+import 'package:go_router/go_router.dart';
 import 'package:supabase_flutter/supabase_flutter.dart';
 
 import '../../../../core/services/supabase_chat_service.dart';
 import '../../../../core/services/cloudinary_service.dart';
 import '../../../../core/theme/app_theme.dart';
 import '../../../swipe/domain/entities/user_profile.dart';
+import '../../../moderation/presentation/widgets/user_actions_menu.dart';
 import '../../bloc/chat_bloc.dart';
 import '../widgets/chat_bubble.dart';
 
@@ -118,6 +120,17 @@ class _ChatViewState extends State<_ChatView> {
             ),
           ],
         ),
+        actions: [
+          if (profile != null)
+            UserActionsMenu(
+              userId: profile.id,
+              userName: profile.name,
+              onSuccess: () {
+                // После блокировки, вернёмся на matches page
+                context.pop();
+              },
+            ),
+        ],
       ),
       body: Column(
         children: [

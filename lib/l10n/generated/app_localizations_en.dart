@@ -273,4 +273,63 @@ class SEn extends S {
 
   @override
   String get course => 'course';
+
+  @override
+  String get report => 'Report';
+
+  @override
+  String get block => 'Block';
+
+  @override
+  String get reportSent => 'Report sent';
+
+  @override
+  String get userBlocked => 'User blocked';
+
+  @override
+  String get blockConfirm =>
+      'You will no longer see this person\'s profile and they won\'t see yours.';
+
+  @override
+  String get spam => 'Spam';
+
+  @override
+  String get inappropriate => 'Inappropriate content';
+
+  @override
+  String get fakeProfile => 'Fake profile';
+
+  @override
+  String get abuse => 'Abuse';
+
+  @override
+  String get explicitContent => 'Explicit content';
+
+  @override
+  String get underage => 'Underage suspicion';
+
+  @override
+  String get otherReason => 'Other';
+
+  @override
+  String get ageRestriction => 'Age Restriction';
+
+  @override
+  String get ageRestrictionMsg =>
+      'SDU Match is only available for users 18+ years old. Please come back when you turn 18.';
+
+  @override
+  String get reason => 'Reason';
+
+  @override
+  String get additionalDetails => 'Additional details (optional)';
+
+  @override
+  String get detailsPlaceholder => 'Tell us more...';
+
+  @override
+  String get submitReport => 'Submit Report';
+
+  @override
+  String get ok => 'OK';
 }

@@ -1,7 +1,6 @@
 ﻿import 'package:flutter/material.dart';
 import 'package:go_router/go_router.dart';
 import 'package:supabase_flutter/supabase_flutter.dart';
-import 'package:google_sign_in/google_sign_in.dart';
 import 'package:sdu_match/core/theme/app_theme.dart';
 
 class LoginPage extends StatefulWidget {
@@ -18,6 +17,7 @@ class _LoginPageState extends State<LoginPage> {
 
   final TextEditingController _emailController = TextEditingController();
   final TextEditingController _passwordController = TextEditingController();
+  final TextEditingController _confirmPasswordController = TextEditingController();
   final RegExp _sduEmailRegExp = RegExp(r'^\d+@(stu\.)?sdu\.edu\.kz$');
   final _supabase = Supabase.instance.client;
 
@@ -25,6 +25,7 @@ class _LoginPageState extends State<LoginPage> {
   void dispose() {
     _emailController.dispose();
     _passwordController.dispose();
+    _confirmPasswordController.dispose();
     super.dispose();
   }
 
@@ -52,10 +53,23 @@ class _LoginPageState extends State<LoginPage> {
   Future<void> _handleEmailPasswordSubmit() async {
     final email = _emailController.text.trim();
     final password = _passwordController.text.trim();
+    final confirmPassword = _confirmPasswordController.text.trim();
 
     if (email.isEmpty || password.isEmpty) {
       _showError('Пожалуйста, заполните все поля');
       return;
+    }
+
+    // Проверка совпадения паролей при регистрации
+    if (!_isLoginMode) {
+      if (confirmPassword.isEmpty) {
+        _showError('Пожалуйста, повторите пароль');
+        return;
+      }
+      if (password != confirmPassword) {
+        _showError('Пароли не совпадают');
+        return;
+      }
     }
 
     if (!_sduEmailRegExp.hasMatch(email)) {
@@ -88,7 +102,18 @@ class _LoginPageState extends State<LoginPage> {
           password: password,
         );
         _showSuccess('Регистрация успешна! Проверьте почту для подтверждения.');
-        if (mounted) context.go('/');
+        
+        // Очистить все поля
+        _emailController.clear();
+        _passwordController.clear();
+        _confirmPasswordController.clear();
+        
+        // Переключиться на режим входа
+        if (mounted) {
+          setState(() {
+            _isLoginMode = true;
+          });
+        }
       }
     } on AuthException catch (e) {
       String errorMessage = 'Произошла ошибка';
@@ -102,58 +127,6 @@ class _LoginPageState extends State<LoginPage> {
       _showError(errorMessage);
     } catch (e) {
       _showError('Ошибка: $e');
-    } finally {
-      if (mounted) {
-        setState(() {
-          _isLoading = false;
-        });
-      }
-    }
-  }
-
-  void _handleGoogleSignIn() async {
-    setState(() {
-      _isLoading = true;
-    });
-
-    try {
-      // authenticate() бросает исключение при отмене (не возвращает null)
-      final GoogleSignInAccount googleUser =
-          await GoogleSignIn.instance.authenticate();
-
-      final email = googleUser.email;
-
-      if (!_sduEmailRegExp.hasMatch(email)) {
-        await GoogleSignIn.instance.signOut();
-        _showError('Ошибка: Разрешены только студенческие почты (например: 240103064@sdu.edu.kz)');
-        setState(() {
-          _isLoading = false;
-        });
-        return;
-      }
-
-      // В v7.x authentication — синхронный геттер, и содержит только idToken
-      final GoogleSignInAuthentication googleAuth = googleUser.authentication;
-      
-      // Supabase OAuth with Google
-      await _supabase.auth.signInWithIdToken(
-        provider: OAuthProvider.google,
-        idToken: googleAuth.idToken!,
-      );
-
-      _showSuccess('Успешный вход! Добро пожаловать в SDU Match.');
-      if (mounted) {
-        context.go('/');
-      }
-    } on GoogleSignInException catch (e) {
-      // Пользователь отменил вход
-      if (e.code == GoogleSignInExceptionCode.canceled) {
-        // Ничего не делаем
-      } else {
-        _showError('Ошибка Google Sign-In: ${e.description ?? e.code}');
-      }
-    } catch (e) {
-      _showError('Произошла ошибка при входе: $e');
     } finally {
       if (mounted) {
         setState(() {
@@ -197,35 +170,20 @@ class _LoginPageState extends State<LoginPage> {
                 // Заголовок
                 Text(
                   _isLoginMode ? 'С возвращением!' : 'Создать аккаунт',
-                  textAlign: TextAlign.center,
                   style: const TextStyle(
                     fontSize: 28,
                     fontWeight: FontWeight.bold,
-                    color: AppColors.primaryBlue,
-                    letterSpacing: 1.2,
+                    color: AppColors.textPrimary,
                   ),
                 ),
-                
-                const SizedBox(height: 8),
-                
-                // Подзаголовок
-                const Text(
-                  'Только для студентов SDU',
-                  textAlign: TextAlign.center,
-                  style: TextStyle(
-                    fontSize: 16,
-                    color: AppColors.textSecondary,
-                  ),
-                ),
-                
-                const SizedBox(height: 40),
+
+                const SizedBox(height: 24),
 
                 // Поле Email
                 TextField(
                   controller: _emailController,
-                  keyboardType: TextInputType.emailAddress,
                   decoration: InputDecoration(
-                    hintText: '240103064@sdu.edu.kz',
+                    hintText: 'Email (@sdu.edu.kz)',
                     prefixIcon: const Icon(Icons.email_outlined, color: AppColors.textSecondary),
                     filled: true,
                     fillColor: Colors.grey.shade100,
@@ -267,6 +225,26 @@ class _LoginPageState extends State<LoginPage> {
                   ),
                 ),
 
+                // Поле "Повторите пароль" (только при регистрации)
+                if (!_isLoginMode) ...[
+                  const SizedBox(height: 16),
+                  TextField(
+                    controller: _confirmPasswordController,
+                    obscureText: true,
+                    decoration: InputDecoration(
+                      hintText: 'Повторите пароль',
+                      prefixIcon: const Icon(Icons.lock_outline, color: AppColors.textSecondary),
+                      filled: true,
+                      fillColor: Colors.grey.shade100,
+                      border: OutlineInputBorder(
+                        borderRadius: BorderRadius.circular(16),
+                        borderSide: BorderSide.none,
+                      ),
+                      contentPadding: const EdgeInsets.symmetric(vertical: 16),
+                    ),
+                  ),
+                ],
+
                 const SizedBox(height: 24),
 
                 // Кнопка Войти / Зарегистрироваться
@@ -306,6 +284,8 @@ class _LoginPageState extends State<LoginPage> {
                   onPressed: () {
                     setState(() {
                       _isLoginMode = !_isLoginMode;
+                      // Очистить поле повторного пароля при переключении режима
+                      _confirmPasswordController.clear();
                     });
                   },
                   child: Text(
@@ -320,43 +300,6 @@ class _LoginPageState extends State<LoginPage> {
                 ),
 
                 const SizedBox(height: 24),
-              ],
-            ),
-          ),
-        ),
-      ),
-    );
-  }
-
-  Widget _buildGoogleButton() {
-    return Container(
-      height: 56,
-      decoration: BoxDecoration(
-        color: Colors.white,
-        borderRadius: BorderRadius.circular(16),
-        border: Border.all(color: Colors.grey.shade300),
-      ),
-      child: Material(
-        color: Colors.transparent,
-        child: InkWell(
-          borderRadius: BorderRadius.circular(16),
-          onTap: _isLoading ? null : _handleGoogleSignIn,
-          child: Padding(
-            padding: const EdgeInsets.symmetric(horizontal: 24),
-            child: Row(
-              mainAxisAlignment: MainAxisAlignment.center,
-              children: [
-                // Иконка Google (пока используем Flutter лого как заглушку, позже заменим на SVG)
-                const FlutterLogo(size: 24), 
-                const SizedBox(width: 16),
-                const Text(
-                  'Продолжить с Google',
-                  style: TextStyle(
-                    fontSize: 16,
-                    fontWeight: FontWeight.w600,
-                    color: AppColors.textPrimary,
-                  ),
-                ),
               ],
             ),
           ),

@@ -1,0 +1,8 @@
+{
+  "projects": {
+    "default": "sdu-match-prod",
+    "prod": "sdu-match-prod",
+    "staging": "sdu-match-staging"
+  },
+  "targets": {}
+}

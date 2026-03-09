@@ -23,6 +23,7 @@ class OnboardingBloc extends Bloc<OnboardingEvent, OnboardingState> {
     on<OnboardingPhotoUploadStarted>(_onPhotoUploadStarted);
     on<OnboardingPhotoUploaded>(_onPhotoUploaded);
     on<OnboardingPhotoUploadFailed>(_onPhotoUploadFailed);
+    on<OnboardingInterestsUpdated>(_onInterestsUpdated);
     on<OnboardingCompleted>(_onCompleted);
   }
 
@@ -120,6 +121,15 @@ class OnboardingBloc extends Bloc<OnboardingEvent, OnboardingState> {
     }
   }
 
+  void _onInterestsUpdated(OnboardingInterestsUpdated event, Emitter<OnboardingState> emit) {
+    if (state is OnboardingInProgress) {
+      final current = state as OnboardingInProgress;
+      emit(current.copyWith(
+        data: current.data.copyWith(interests: event.interests),
+      ));
+    }
+  }
+
   Future<void> _onCompleted(OnboardingCompleted event, Emitter<OnboardingState> emit) async {
     if (state is! OnboardingInProgress) return;
     
@@ -158,8 +168,8 @@ class OnboardingBloc extends Bloc<OnboardingEvent, OnboardingState> {
         faculty: data.faculty!,
         yearOfStudy: data.yearOfStudy!,
         imageUrl: data.photoUrl!,
-        interests: [], // Можно будет заполнить позже
-        bio: '', // Можно будет заполнить позже
+        interests: data.interests,
+        bio: '',
       );
 
       await _supabaseService.saveUserProfile(profile);

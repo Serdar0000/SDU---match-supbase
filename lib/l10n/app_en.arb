@@ -105,5 +105,25 @@
 
   "editingInDev": "Editing in development",
   "settingsInDev": "Settings in development",
-  "course": "course"
+  "course": "course",
+  "report": "Report",
+  "block": "Block",
+  "reportSent": "Report sent",
+  "userBlocked": "User blocked",
+  "blockConfirm": "You will no longer see this person's profile and they won't see yours.",
+  "spam": "Spam",
+  "inappropriate": "Inappropriate content",
+  "fakeProfile": "Fake profile",
+  "abuse": "Abuse",
+  "explicitContent": "Explicit content",
+  "underage": "Underage suspicion",
+  "otherReason": "Other",
+  
+  "ageRestriction": "Age Restriction",
+  "ageRestrictionMsg": "SDU Match is only available for users 18+ years old. Please come back when you turn 18.",
+  "reason": "Reason",
+  "additionalDetails": "Additional details (optional)",
+  "detailsPlaceholder": "Tell us more...",
+  "submitReport": "Submit Report",
+  "ok": "OK"
 }

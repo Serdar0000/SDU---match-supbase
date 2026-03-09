@@ -3,93 +3,66 @@
 
 import { serve } from "https://deno.land/std@0.168.0/http/server.ts"
 
-serve(async (req) => {
+serve(async (req: Request) => {
   try {
     const { to, subject, body } = await req.json();
 
-    // Вариант 1: Используйте Resend (бесплатно 100 email/день)
+    // Используем Resend API (вместо SendGrid)
     const RESEND_API_KEY = Deno.env.get('RESEND_API_KEY');
     
-    if (RESEND_API_KEY) {
-      const response = await fetch('https://api.resend.com/emails', {
-        method: 'POST',
-        headers: {
-          'Content-Type': 'application/json',
-          'Authorization': `Bearer ${RESEND_API_KEY}`,
-        },
-        body: JSON.stringify({
-          from: 'SDU Match <noreply@yourdomain.com>',
-          to: [to],
-          subject: subject,
-          html: `
-            <div style="font-family: Arial, sans-serif; max-width: 600px; margin: 0 auto;">
-              <h2 style="color: #FF6B9D;">SDU Match</h2>
-              <p>${body}</p>
-              <hr style="border: 1px solid #eee; margin: 20px 0;">
-              <p style="color: #666; font-size: 12px;">
-                Вы получили это письмо, потому что у вас включены email-уведомления в SDU Match.
-                <br>
-                Чтобы отключить, откройте приложение → Настройки → Email уведомления.
-              </p>
-            </div>
-          `,
-        }),
-      });
+    if (!RESEND_API_KEY) {
+      console.error('RESEND_API_KEY is not set');
+      return new Response(
+        JSON.stringify({ error: 'RESEND_API_KEY is not set' }),
+        { status: 500, headers: { 'Content-Type': 'application/json' } }
+      );
+    }
 
+    const response = await fetch('https://api.resend.com/emails', {
+      method: 'POST',
+      headers: {
+        'Content-Type': 'application/json',
+        'Authorization': `Bearer ${RESEND_API_KEY}`,
+      },
+      body: JSON.stringify({
+        from: 'SDU Match <onboarding@resend.dev>', // Или ваш верифицированный домен в Resend
+        to: [to],
+        subject: subject,
+        html: `
+          <div style="font-family: Arial, sans-serif; max-width: 600px; margin: 0 auto; padding: 20px; border: 1px solid #eee; border-radius: 10px;">
+            <h2 style="color: #FF6B9D; text-align: center;">SDU Match</h2>
+            <div style="font-size: 16px; line-height: 1.6; color: #333;">
+              ${body}
+            </div>
+            <div style="margin-top: 30px; text-align: center;">
+              <a href="https://sdu-match.kz" style="background-color: #FF6B9D; color: white; padding: 12px 25px; text-decoration: none; border-radius: 5px; font-weight: bold;">Перейти в приложение</a>
+            </div>
+            <hr style="border: none; border-top: 1px solid #eee; margin: 30px 0;">
+            <p style="color: #999; font-size: 12px; text-align: center;">
+              Вы получили это письмо, потому что у вас включены уведомления в SDU Match.
+            </p>
+          </div>
+        `,
+      }),
+    });
+
+    if (response.ok) {
       const result = await response.json();
-      
       return new Response(
         JSON.stringify({ success: true, result }),
         { status: 200, headers: { 'Content-Type': 'application/json' } }
       );
-    }
-
-    // Вариант 2: Используйте SendGrid
-    const SENDGRID_API_KEY = Deno.env.get('SENDGRID_API_KEY');
-    
-    if (SENDGRID_API_KEY) {
-      const response = await fetch('https://api.sendgrid.com/v3/mail/send', {
-        method: 'POST',
-        headers: {
-          'Content-Type': 'application/json',
-          'Authorization': `Bearer ${SENDGRID_API_KEY}`,
-        },
-        body: JSON.stringify({
-          personalizations: [{
-            to: [{ email: to }],
-          }],
-          from: { email: 'noreply@yourdomain.com', name: 'SDU Match' },
-          subject: subject,
-          content: [{
-            type: 'text/html',
-            value: `
-              <div style="font-family: Arial, sans-serif; max-width: 600px; margin: 0 auto;">
-                <h2 style="color: #FF6B9D;">SDU Match</h2>
-                <p>${body}</p>
-              </div>
-            `,
-          }],
-        }),
-      });
-
+    } else {
+      const errorData = await response.text();
+      console.error('Resend error:', errorData);
       return new Response(
-        JSON.stringify({ success: true }),
-        { status: 200, headers: { 'Content-Type': 'application/json' } }
+        JSON.stringify({ error: 'Failed to send email via Resend', details: errorData }),
+        { status: response.status, headers: { 'Content-Type': 'application/json' } }
       );
     }
 
-    // Если нет API ключей - просто логируем
-    console.log(`Email to ${to}: ${subject} - ${body}`);
-    
-    return new Response(
-      JSON.stringify({ 
-        success: true, 
-        message: 'Email logged (no API key configured)' 
-      }),
-      { status: 200, headers: { 'Content-Type': 'application/json' } }
-    );
-
   } catch (error) {
+    console.error('Function error:', error);
     return new Response(
       JSON.stringify({ error: (error as Error).message }),
       { status: 500, headers: { 'Content-Type': 'application/json' } }

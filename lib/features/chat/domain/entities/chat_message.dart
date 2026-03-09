@@ -12,6 +12,7 @@ abstract class ChatMessage with _$ChatMessage {
     required String text,
     required DateTime timestamp,
     @Default(false) bool isRead,
+    @Default(false) bool isSystem,
   }) = _ChatMessage;
 
   bool get isEmpty => text.trim().isEmpty;

@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:go_router/go_router.dart';
 import 'package:supabase_flutter/supabase_flutter.dart';
 import 'package:sdu_match/core/config/app_config.dart';
@@ -9,6 +10,7 @@ import '../../../../core/services/supabase_service.dart';
 import '../../../../core/theme/app_theme.dart';
 import '../../../swipe/domain/entities/user_profile.dart';
 import '../../../chat/presentation/widgets/match_list_tile.dart';
+import '../../../moderation/presentation/bloc/moderation_bloc.dart';
 
 class MatchesPage extends StatefulWidget {
   const MatchesPage({super.key});
@@ -46,38 +48,70 @@ class _MatchesPageState extends State<MatchesPage> {
           style: TextStyle(fontWeight: FontWeight.bold),
         ),
       ),
-      // 🚧 DEV MODE: используем FutureBuilder с моковыми данными
-      body: AppConfig.DEV_MODE
-          ? FutureBuilder<List<_MatchWithProfile>>(
-              future: _loadMockMatches(),
-              builder: (context, snapshot) {
-                return _buildContent(context, snapshot, isDark);
-              },
-            )
-          : StreamBuilder<List<Map<String, dynamic>>>(
-              stream: _chatService.getMatchesStream(),
-              builder: (context, snapshot) {
-                if (snapshot.connectionState == ConnectionState.waiting) {
-                  return const Center(child: CircularProgressIndicator());
-                }
-                if (snapshot.hasError) {
-                  return Center(
-                    child: Text(
-                      'Ошибка: ${snapshot.error}',
-                      style: const TextStyle(color: Colors.red),
-                    ),
-                  );
-                }
-                final matches = snapshot.data ?? [];
-                return FutureBuilder<List<_MatchWithProfile>>(
-                  future: _loadMatchProfiles(matches),
-                  builder: (context, profileSnapshot) {
-                    return _buildContent(context, profileSnapshot, isDark);
+      // получаем blockedIds из ModerationBloc и фильтруем матчи
+      body: BlocBuilder<ModerationBloc, ModerationState>(
+        builder: (context, modState) {
+          final blockedIds = modState.maybeWhen(
+            blockedIdsLoaded: (ids) => ids,
+            success: (msg, ids) => ids,
+            orElse: () => <String>[],
+          );
+
+          // 🚧 DEV MODE: используем FutureBuilder с моковыми данными
+          return AppConfig.DEV_MODE
+              ? FutureBuilder<List<_MatchWithProfile>>(
+                  future: _loadMockMatches(),
+                  builder: (context, snapshot) {
+                    return _buildContent(
+                      context,
+                      _filterByBlockedIds(snapshot, blockedIds),
+                      isDark,
+                    );
+                  },
+                )
+              : StreamBuilder<List<Map<String, dynamic>>>(
+                  stream: _chatService.getMatchesStream(),
+                  builder: (context, snapshot) {
+                    if (snapshot.connectionState == ConnectionState.waiting) {
+                      return const Center(child: CircularProgressIndicator());
+                    }
+                    if (snapshot.hasError) {
+                      return Center(
+                        child: Text(
+                          'Ошибка: ${snapshot.error}',
+                          style: const TextStyle(color: Colors.red),
+                        ),
+                      );
+                    }
+                    final matches = snapshot.data ?? [];
+                    return FutureBuilder<List<_MatchWithProfile>>(
+                      future: _loadMatchProfiles(matches),
+                      builder: (context, profileSnapshot) {
+                        return _buildContent(
+                          context,
+                          _filterByBlockedIds(profileSnapshot, blockedIds),
+                          isDark,
+                        );
+                      },
+                    );
                   },
                 );
-              },
-            ),
+        },
+      ),
     );
+  }
+
+  AsyncSnapshot<List<_MatchWithProfile>> _filterByBlockedIds(
+    AsyncSnapshot<List<_MatchWithProfile>> snapshot,
+    List<String> blockedIds,
+  ) {
+    if (snapshot.hasData) {
+      final filtered = snapshot.data!
+          .where((match) => !blockedIds.contains(match.profile.id))
+          .toList();
+      return AsyncSnapshot.withData(snapshot.connectionState, filtered);
+    }
+    return snapshot;
   }
 
   Widget _buildContent(
@@ -254,9 +288,9 @@ class _MatchesPageState extends State<MatchesPage> {
       List<Map<String, dynamic>> matches) async {
     final result = <_MatchWithProfile>[];
     for (final match in matches) {
-      final users = List<String>.from(match['users'] ?? []);
-      final otherUid =
-          users.firstWhere((id) => id != _currentUid, orElse: () => '');
+      final user1Id = match['user1_id'] as String? ?? '';
+      final user2Id = match['user2_id'] as String? ?? '';
+      final otherUid = user1Id == _currentUid ? user2Id : user1Id;
       if (otherUid.isEmpty) continue;
       final profile = await _supabaseService.getUserProfile(otherUid);
       if (profile != null) {

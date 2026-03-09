@@ -47,3 +47,7 @@ app.*.map.json
 
 # Environment variables — NEVER commit real credentials
 .env
+
+# Firebase — sensitive config files
+firebase_options.dart
+firebase.json
